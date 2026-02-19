@@ -1,0 +1,143 @@
+/* Air Quality Dashboard — Professional Neutral Theme (v2) */
+
+:root {
+    --bg: #0b0f14;
+    --panel: #0f1621;
+    --panel-2: #111a26;
+    --text: #e6eaf0;
+    --muted: #a9b4c2;
+    --border: rgba(255, 255, 255, 0.08);
+    --accent: #3b82f6;
+    --accent-2: #60a5fa;
+    --radius: 14px;
+  }
+  
+  /* App background */
+  [data-testid="stAppViewContainer"] {
+    background: var(--bg);
+  }
+  
+  /* Center content + consistent padding */
+  .block-container {
+    max-width: 1200px;
+    padding-top: 2.0rem;
+    padding-bottom: 2.5rem;
+  }
+  
+  /* Sidebar */
+  section[data-testid="stSidebar"] {
+    background: #0a0e13;
+    border-right: 1px solid var(--border);
+  }
+  section[data-testid="stSidebar"] * {
+    color: var(--text);
+  }
+  
+  /* Headings & text */
+  h1, h2, h3 {
+    color: var(--text) !important;
+    font-weight: 650 !important;
+    letter-spacing: -0.01em;
+  }
+  p, li, span, div {
+    color: var(--text);
+  }
+  small, .stCaptionContainer, [data-testid="stCaptionContainer"] {
+    color: var(--muted) !important;
+  }
+  
+  /* Subtle separators */
+  hr {
+    border-color: var(--border) !important;
+  }
+  
+  /* Hero header */
+  .aq-hero {
+    background: rgba(59, 130, 246, 0.10);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    padding: 18px 18px;
+    border-radius: var(--radius);
+  }
+  .aq-hero-title {
+    font-size: 2.05rem;
+    font-weight: 750;
+    line-height: 1.1;
+  }
+  .aq-hero-sub {
+    margin-top: 8px;
+    color: rgba(230, 234, 240, 0.75);
+  }
+  
+  /* Panel blocks */
+  .aq-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 14px;
+  }
+  .aq-panel-title {
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .aq-panel-body {
+    color: rgba(230, 234, 240, 0.85);
+    line-height: 1.5;
+  }
+  
+  /* Metric cards (remove default metric “chip” look) */
+  div[data-testid="stMetric"] {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 14px;
+  }
+  div[data-testid="stMetric"] label {
+    color: var(--muted) !important;
+    font-weight: 600;
+  }
+  div[data-testid="stMetricValue"] {
+    color: var(--text) !important;
+  }
+  div[data-testid="stMetricDelta"] {
+    color: var(--muted) !important;
+  }
+  
+  /* Dataframes */
+  div[data-testid="stDataFrame"] {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+  }
+  .stDataFrame {
+    font-size: 0.90rem;
+  }
+  
+  /* Expanders */
+  div[data-testid="stExpander"] {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  div[data-testid="stExpander"] summary {
+    color: var(--text);
+  }
+  
+  /* Sidebar radio -> menu feel */
+  [data-testid="stSidebar"] [role="radiogroup"] {
+    gap: 6px;
+  }
+  [data-testid="stSidebar"] label[data-testid="stWidgetLabel"] {
+    display: none; /* we supply our own label in Python */
+  }
+  [data-testid="stSidebar"] div[role="radio"] {
+    padding: 10px 10px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+  }
+  [data-testid="stSidebar"] div[role="radio"][aria-checked="true"] {
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+  }

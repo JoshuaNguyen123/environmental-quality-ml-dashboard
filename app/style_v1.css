@@ -1,0 +1,26 @@
+/* Air Quality Dashboard — Professional Neutral Theme */
+
+section[data-testid="stSidebar"] {
+    background-color: #F7F8FA;
+}
+
+.stMetric {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+h1, h2, h3 {
+    color: #1F2937;
+    font-weight: 600;
+}
+
+.stDataFrame {
+    font-size: 0.85rem;
+}
+
+div[data-testid="stExpander"] {
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+}

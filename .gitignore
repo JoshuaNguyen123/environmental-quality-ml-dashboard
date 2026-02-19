@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated data (reproducible via pipeline)
+data/raw/*
+data/interim/*
+data/processed/*
+
+# Generated artifacts (reproducible via pipeline)
+artifacts/models/*
+artifacts/metrics/*
+artifacts/figures/*
+artifacts/tables/*
+artifacts/reports/*
+
+# Preserve directory structure
+!**/.gitkeep

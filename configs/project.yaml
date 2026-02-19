@@ -1,0 +1,40 @@
+project:
+  name: air-quality-ml-dashboard
+  version: "1.0.0"
+  description: "Air Quality Risk Modeling & Environmental Pattern Analysis"
+  author: "ML Portfolio"
+
+paths:
+  raw_data: data/raw/air_quality.csv
+  cleaned_data: data/interim/cleaned.csv
+  features: data/processed/features.csv
+  train: data/processed/train.csv
+  val: data/processed/val.csv
+  test: data/processed/test.csv
+  metrics: artifacts/metrics
+  figures: artifacts/figures
+  models: artifacts/models
+  tables: artifacts/tables
+  reports: artifacts/reports
+
+data:
+  target_regression: "NO2_GT"
+  target_classification: "High_Pollution"
+  datetime_col: "DateTime"
+  sensor_columns:
+    - "PT08_S1_CO"
+    - "PT08_S2_NMHC"
+    - "PT08_S3_NOx"
+    - "PT08_S4_NO2"
+    - "PT08_S5_O3"
+  ground_truth_columns:
+    - "CO_GT"
+    - "NOx_GT"
+    - "NO2_GT"
+  environmental_columns:
+    - "Temperature"
+    - "Rel_Humidity"
+    - "Abs_Humidity"
+  missing_value_sentinel: -200
+
+random_state: 42

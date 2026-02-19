@@ -1,0 +1,36 @@
+no2:
+  # EU annual mean limit: 40 µg/m³
+  # WHO guideline: 25 µg/m³ (annual), 200 µg/m³ (1-hour)
+  # Using 75th percentile as demonstration threshold for balanced classification
+  regulatory_threshold: 120  # µg/m³ — adapted for balanced binary classification
+  description: "NO2(GT) > 120 µg/m³ flags elevated pollution event"
+
+cost_benefit:
+  # Cost-benefit parameters for threshold optimization
+  true_positive_benefit: 10   # Benefit of correctly detecting high pollution
+  false_positive_cost: 3      # Cost of false alarm
+  false_negative_cost: 15     # Cost of missing a high pollution event
+  true_negative_benefit: 0    # Baseline — no action needed
+
+temperature:
+  # Median split for hypothesis testing
+  split_method: median
+
+seasons:
+  # Month-to-season mapping
+  1: Winter
+  2: Winter
+  3: Spring
+  4: Spring
+  5: Spring
+  6: Summer
+  7: Summer
+  8: Summer
+  9: Autumn
+  10: Autumn
+  11: Autumn
+  12: Winter
+
+humidity_buckets:
+  bins: [0, 30, 60, 100]
+  labels: ["Low", "Medium", "High"]
