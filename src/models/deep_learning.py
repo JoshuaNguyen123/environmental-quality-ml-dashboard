@@ -37,7 +37,10 @@ def train_mlp_regressor(
         config = {}
 
     hidden = tuple(config.get("hidden_layers", [128, 64]))
+    activation = config.get("activation", "relu")
     lr = config.get("learning_rate", 0.001)
+    alpha = config.get("alpha", 0.0001)
+    lr_schedule = config.get("learning_rate_schedule", "constant")
     epochs = config.get("epochs", 100)
     patience = config.get("early_stopping_patience", 10)
     seed = config.get("random_state", 42)
@@ -48,9 +51,11 @@ def train_mlp_regressor(
 
     mlp = MLPRegressor(
         hidden_layer_sizes=hidden,
-        activation="relu",
+        activation=activation,
         solver="adam",
         learning_rate_init=lr,
+        learning_rate=lr_schedule,
+        alpha=alpha,
         max_iter=1,
         warm_start=True,
         random_state=seed,
@@ -103,7 +108,10 @@ def train_mlp_classifier(
         config = {}
 
     hidden = tuple(config.get("hidden_layers", [128, 64]))
+    activation = config.get("activation", "relu")
     lr = config.get("learning_rate", 0.001)
+    alpha = config.get("alpha", 0.0001)
+    lr_schedule = config.get("learning_rate_schedule", "constant")
     epochs = config.get("epochs", 100)
     patience = config.get("early_stopping_patience", 10)
     seed = config.get("random_state", 42)
@@ -114,9 +122,11 @@ def train_mlp_classifier(
 
     mlp = MLPClassifier(
         hidden_layer_sizes=hidden,
-        activation="relu",
+        activation=activation,
         solver="adam",
         learning_rate_init=lr,
+        learning_rate=lr_schedule,
+        alpha=alpha,
         max_iter=1,
         warm_start=True,
         random_state=seed,

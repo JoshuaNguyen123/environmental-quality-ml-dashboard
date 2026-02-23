@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Environmental Analysis Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#137fec",
+                        "primary-dark": "#0b5cb5",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#0f172a", 
+                        "surface-dark": "#1e293b",     
+                        "surface-darker": "#111827",   
+                        code: "#282c34",
+                    },
+                    fontFamily: {
+                        display: ["Space Grotesk", "sans-serif"],
+                        mono: ["Space Grotesk", "monospace"], 
+                        code: ["Consolas", "Monaco", "Courier New", "monospace"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        lg: "0.75rem",
+                        xl: "1rem",
+                        full: "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .perspective-1000 {
+                perspective: 1000px;
+            }
+            .transform-style-3d {
+                transform-style: preserve-3d;
+            }
+            .backface-hidden {
+                backface-visibility: hidden;
+            }
+            .rotate-y-180 {
+                transform: rotateY(180deg);
+            }.flip-checkbox:checked ~ .flip-content {
+                transform: rotateY(180deg);
+            }.hljs-keyword { color: #c678dd; }
+            .hljs-function { color: #61afef; }
+            .hljs-string { color: #98c379; }
+            .hljs-number { color: #d19a66; }
+            .hljs-comment { color: #5c6370; font-style: italic; }
+            .hljs-variable { color: #e06c75; }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display antialiased overflow-hidden">
+<div class="flex h-screen w-full flex-row overflow-hidden">
+<aside class="hidden md:flex flex-col w-72 bg-surface-darker border-r border-slate-800 h-full flex-shrink-0">
+<div class="p-6 flex items-center gap-4 border-b border-slate-800">
+<div class="relative h-12 w-12 rounded-full overflow-hidden border-2 border-primary/20">
+<img alt="Profile photo of Dr. Alex Chen" class="h-full w-full object-cover" data-alt="Professional headshot of a data scientist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0HfkK8pOPW3LTgP3rdZe0snVzFbsT7_zT95W9KdX-fcM4NdGby7mac8O9z0eagdcBkI7CW0EySzUDL1xgdGpbX4K_a06jJRsOD4OcH11bnzCx0VAC0oa4hM_icgP26w0szWFssvZfjfRl5O-sLM7mJ3y2itgxwhl1vWEQozDfLCZ46DLEKpdjUA1X5gjc16_C5KnSNjf0L5dM0x4oVT52cHhPYyN6wfNpuH_3I0xOxZTILSLhz9oVftZnju4i3OMWvZ9incw4Fgc"/>
+</div>
+<div>
+<h1 class="text-white text-base font-bold leading-tight">Dr. Alex Chen</h1>
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Data Scientist</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/10 text-primary border border-primary/20 group" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1">analytics</span>
+<span class="text-sm font-bold">Statistics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">videocam</span>
+<span class="text-sm font-medium">Live Feed</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">model_training</span>
+<span class="text-sm font-medium">Models</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-800">
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" href="#">
+<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"></path></svg>
+<span class="text-sm font-medium">GitHub</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" href="#">
+<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" fill-rule="evenodd"></path></svg>
+<span class="text-sm font-medium">LinkedIn</span>
+</a>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<header class="h-20 border-b border-slate-800 bg-background-dark flex items-center justify-between px-8 flex-shrink-0 z-10">
+<div class="flex items-center gap-6">
+<button class="md:hidden text-slate-400 hover:text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="text-xl font-bold text-white tracking-tight hidden sm:block">Environmental Analysis</h2>
+<div class="flex items-center gap-2 bg-surface-dark px-3 py-1.5 rounded-full border border-slate-700/50">
+<div class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+</div>
+<span class="text-xs font-mono font-medium text-emerald-400">API ONLINE (98ms)</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center bg-surface-dark rounded-lg p-1 border border-slate-700/50">
+<div class="flex items-center gap-2 px-3 py-1 border-r border-slate-700">
+<span class="material-symbols-outlined text-yellow-500 text-[20px]">sunny</span>
+<div class="flex flex-col leading-none">
+<span class="text-xs text-slate-400">Temp</span>
+<span class="text-sm font-bold text-white">24°C</span>
+</div>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 border-r border-slate-700">
+<span class="material-symbols-outlined text-blue-400 text-[20px]">humidity_percentage</span>
+<div class="flex flex-col leading-none">
+<span class="text-xs text-slate-400">Hum</span>
+<span class="text-sm font-bold text-white">45%</span>
+</div>
+</div>
+<div class="flex items-center gap-2 px-3 py-1">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">air</span>
+<div class="flex flex-col leading-none">
+<span class="text-xs text-slate-400">Wind</span>
+<span class="text-sm font-bold text-white">12km/h</span>
+</div>
+</div>
+</div>
+<button class="flex items-center justify-center h-10 w-10 rounded-full hover:bg-surface-dark text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+<section class="bg-surface-dark rounded-xl border border-slate-800 shadow-xl relative perspective-1000 group">
+<input class="hidden flip-checkbox" id="code-toggle-1" type="checkbox"/>
+<div class="flip-content relative w-full h-full transition-all duration-700 transform-style-3d min-h-[420px]">
+<div class="absolute inset-0 backface-hidden flex flex-col p-6">
+<div class="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 relative z-10">
+<div>
+<h3 class="text-lg font-bold text-white mb-1">PM2.5 vs Ozone Concentration</h3>
+<p class="text-sm text-slate-400">Comparative analysis over time</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-background-dark rounded-lg p-1 border border-slate-800">
+<button class="px-3 py-1 text-xs font-medium rounded hover:bg-surface-dark text-slate-400 hover:text-white transition-colors">1H</button>
+<button class="px-3 py-1 text-xs font-medium rounded bg-primary text-white shadow-lg shadow-primary/20">24H</button>
+<button class="px-3 py-1 text-xs font-medium rounded hover:bg-surface-dark text-slate-400 hover:text-white transition-colors">7D</button>
+</div>
+<label class="cursor-pointer flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-700 bg-surface-dark hover:bg-slate-700/50 text-slate-400 hover:text-primary transition-all group/btn" for="code-toggle-1">
+<span class="material-symbols-outlined text-[18px]">code</span>
+<span class="text-xs font-mono font-medium hidden sm:inline">View Code</span>
+</label>
+</div>
+</div>
+<div class="flex-1 relative z-10 min-h-[300px]">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 800 300">
+<line opacity="0.5" stroke="#334155" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="250" y2="250"></line>
+<line opacity="0.5" stroke="#334155" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="175" y2="175"></line>
+<line opacity="0.5" stroke="#334155" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="100" y2="100"></line>
+<line opacity="0.5" stroke="#334155" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="25" y2="25"></line>
+<defs>
+<linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#137fec" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#137fec" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0 200 C 100 180, 200 240, 300 150 S 500 50, 600 120 S 700 180, 800 100 V 300 H 0 Z" fill="url(#chartGradient)"></path>
+<path d="M0 200 C 100 180, 200 240, 300 150 S 500 50, 600 120 S 700 180, 800 100" fill="none" stroke="#137fec" stroke-linecap="round" stroke-width="3" vector-effect="non-scaling-stroke"></path>
+<circle class="animate-pulse origin-center" cx="600" cy="120" fill="#137fec" r="6" stroke="white" stroke-width="2"></circle>
+</svg>
+<div class="absolute top-[90px] left-[72%] transform -translate-x-1/2 bg-surface-darker border border-slate-700 p-2 rounded shadow-xl pointer-events-none">
+<p class="text-xs text-slate-400 mb-0.5">14:30 PM</p>
+<p class="text-sm font-bold text-primary">48.2 µg/m³</p>
+</div>
+</div>
+<div class="flex justify-between text-xs text-slate-500 mt-2 font-mono">
+<span>00:00</span>
+<span>04:00</span>
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+<span>23:59</span>
+</div>
+</div>
+<div class="absolute inset-0 rotate-y-180 backface-hidden bg-surface-darker rounded-xl flex flex-col overflow-hidden border border-slate-700">
+<div class="flex items-center justify-between px-4 py-3 bg-surface-dark border-b border-slate-800">
+<div class="flex items-center gap-2">
+<div class="flex gap-1.5">
+<div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+<div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+</div>
+<span class="ml-2 text-xs text-slate-400 font-mono">visualization_pipeline.py</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+<label class="cursor-pointer text-slate-400 hover:text-white transition-colors" for="code-toggle-1">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</label>
+</div>
+</div>
+<div class="flex-1 overflow-auto p-4 bg-[#282c34] font-code text-xs sm:text-sm leading-relaxed text-slate-300">
+<pre><code class="language-python">
+<span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd
+<span class="hljs-keyword">import</span> seaborn <span class="hljs-keyword">as</span> sns
+<span class="hljs-keyword">from</span> sklearn.preprocessing <span class="hljs-keyword">import</span> MinMaxScaler
+<span class="hljs-comment"># Load environmental data stream</span>
+<span class="hljs-function">def</span> <span class="hljs-function">generate_viz</span>(data_source):
+    df = pd.read_csv(data_source)
+    <span class="hljs-comment"># Normalize sensor readings</span>
+    scaler = MinMaxScaler()
+    df[<span class="hljs-string">'pm25_norm'</span>] = scaler.fit_transform(df[[<span class="hljs-string">'pm25'</span>]])
+    <span class="hljs-comment"># Create time-series plot</span>
+    plt.figure(figsize=(<span class="hljs-number">12</span>, <span class="hljs-number">6</span>))
+    sns.lineplot(
+        data=df, 
+        x=<span class="hljs-string">'timestamp'</span>, 
+        y=<span class="hljs-string">'pm25_norm'</span>,
+        color=<span class="hljs-string">'#137fec'</span>
+    )
+    <span class="hljs-keyword">return</span> plt.gcf()
+                            </code></pre>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-dark rounded-xl border border-slate-800 p-6 shadow-sm hover:border-primary/30 transition-colors group relative overflow-hidden">
+<div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-slate-400 text-sm font-medium mb-1">Mean Concentration</p>
+<h4 class="text-3xl font-bold text-white tracking-tight">42.5 <span class="text-lg font-normal text-slate-500">µg/m³</span></h4>
+</div>
+<span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                            +2.1%
+                        </span>
+</div>
+<div class="h-10 w-full flex items-end gap-1">
+<div class="w-1/6 bg-slate-700/50 h-[40%] rounded-sm"></div>
+<div class="w-1/6 bg-slate-700/50 h-[60%] rounded-sm"></div>
+<div class="w-1/6 bg-slate-700/50 h-[30%] rounded-sm"></div>
+<div class="w-1/6 bg-primary h-[80%] rounded-sm shadow-[0_0_10px_rgba(19,127,236,0.5)]"></div>
+<div class="w-1/6 bg-slate-700/50 h-[50%] rounded-sm"></div>
+<div class="w-1/6 bg-slate-700/50 h-[70%] rounded-sm"></div>
+</div>
+<p class="text-xs text-slate-500 mt-3">Compared to regional avg</p>
+</div>
+<div class="bg-surface-dark rounded-xl border border-slate-800 p-6 shadow-sm hover:border-blue-400/30 transition-colors group relative overflow-hidden">
+<div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-blue-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-slate-400 text-sm font-medium mb-1">Median Value</p>
+<h4 class="text-3xl font-bold text-white tracking-tight">40.1 <span class="text-lg font-normal text-slate-500">µg/m³</span></h4>
+</div>
+<span class="bg-slate-700/30 text-slate-400 text-xs px-2 py-1 rounded font-medium">
+                            Stable
+                        </span>
+</div>
+<div class="relative h-10 w-full mt-2">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 40">
+<path d="M0 35 Q 25 35, 35 20 Q 50 5, 65 20 Q 75 35, 100 35" fill="none" stroke="#64748b" stroke-width="2"></path>
+<line stroke="#38bdf8" stroke-dasharray="2 2" stroke-width="2" x1="50" x2="50" y1="5" y2="35"></line>
+</svg>
+</div>
+<p class="text-xs text-slate-500 mt-3">Distribution centered</p>
+</div>
+<div class="bg-surface-dark rounded-xl border border-slate-800 p-6 shadow-sm hover:border-indigo-400/30 transition-colors group relative overflow-hidden">
+<div class="absolute right-0 top-0 h-full w-1 bg-gradient-to-b from-indigo-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-slate-400 text-sm font-medium mb-1">Standard Deviation</p>
+<h4 class="text-3xl font-bold text-white tracking-tight">±3.4 <span class="text-lg font-normal text-slate-500">σ</span></h4>
+</div>
+<span class="bg-rose-500/10 text-rose-400 text-xs px-2 py-1 rounded font-medium">
+                            High Var
+                        </span>
+</div>
+<div class="flex h-10 w-full items-center justify-center gap-4 mt-1">
+<div class="h-1 w-full bg-slate-700 rounded-full relative">
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/3 h-1.5 bg-indigo-500 rounded-full"></div>
+<div class="absolute top-1/2 left-[33%] transform -translate-y-1/2 h-3 w-0.5 bg-slate-500"></div>
+<div class="absolute top-1/2 right-[33%] transform -translate-y-1/2 h-3 w-0.5 bg-slate-500"></div>
+</div>
+</div>
+<p class="text-xs text-slate-500 mt-3">Variability index: 0.82</p>
+</div>
+</div>
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
+<h3 class="text-lg font-bold text-white">Live Stream</h3>
+</div>
+<button class="text-xs font-medium text-primary hover:text-primary-light flex items-center gap-1">
+                        Export CSV
+                        <span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+<div class="bg-surface-dark rounded-xl border border-slate-800 overflow-hidden shadow-lg">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-darker/50 border-b border-slate-700 text-xs uppercase tracking-wider text-slate-400">
+<th class="p-4 font-semibold">Timestamp</th>
+<th class="p-4 font-semibold">Sensor ID</th>
+<th class="p-4 font-semibold">Location</th>
+<th class="p-4 font-semibold text-right">Reading (PM2.5)</th>
+<th class="p-4 font-semibold text-center">Status</th>
+</tr>
+</thead>
+<tbody class="text-sm font-mono text-slate-300 divide-y divide-slate-800">
+<tr class="group hover:bg-slate-800/50 transition-colors">
+<td class="p-4 text-slate-500">2023-10-27 14:32:05</td>
+<td class="p-4 font-medium text-white">SN-X402</td>
+<td class="p-4">Sector 4 (Industrial)</td>
+<td class="p-4 text-right font-bold text-primary">48.5</td>
+<td class="p-4 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400">Normal</span></td>
+</tr>
+<tr class="group hover:bg-slate-800/50 transition-colors">
+<td class="p-4 text-slate-500">2023-10-27 14:32:04</td>
+<td class="p-4 font-medium text-white">SN-B119</td>
+<td class="p-4">Sector 2 (Residential)</td>
+<td class="p-4 text-right font-bold text-primary">12.3</td>
+<td class="p-4 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400">Normal</span></td>
+</tr>
+<tr class="group hover:bg-slate-800/50 transition-colors">
+<td class="p-4 text-slate-500">2023-10-27 14:32:02</td>
+<td class="p-4 font-medium text-white">SN-A004</td>
+<td class="p-4">Sector 7 (Traffic)</td>
+<td class="p-4 text-right font-bold text-yellow-400">89.1</td>
+<td class="p-4 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-400">Warning</span></td>
+</tr>
+<tr class="group hover:bg-slate-800/50 transition-colors">
+<td class="p-4 text-slate-500">2023-10-27 14:31:58</td>
+<td class="p-4 font-medium text-white">SN-X405</td>
+<td class="p-4">Sector 4 (Industrial)</td>
+<td class="p-4 text-right font-bold text-primary">49.2</td>
+<td class="p-4 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400">Normal</span></td>
+</tr>
+<tr class="group hover:bg-slate-800/50 transition-colors">
+<td class="p-4 text-slate-500">2023-10-27 14:31:55</td>
+<td class="p-4 font-medium text-white">SN-C220</td>
+<td class="p-4">Sector 1 (Park)</td>
+<td class="p-4 text-right font-bold text-primary">08.4</td>
+<td class="p-4 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400">Normal</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-4 py-3 bg-surface-darker border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+<span>Showing last 5 of 1,240 records</span>
+<div class="flex gap-2">
+<button class="hover:text-white disabled:opacity-50">Previous</button>
+<button class="hover:text-white">Next</button>
+</div>
+</div>
+</div>
+</section>
+<footer class="text-center py-6 text-slate-600 text-xs">
+<p>© 2023 Environmental Analysis Dashboard • Data refreshed every 5s</p>
+</footer>
+</div>
+</main>
+</div>
+
+</body></html>

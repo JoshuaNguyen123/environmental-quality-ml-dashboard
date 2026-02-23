@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
@@ -47,15 +47,54 @@ def train_gmm(
     return model, labels
 
 
+def train_agglomerative(
+    X: np.ndarray, params: dict | None = None
+) -> Tuple[AgglomerativeClustering, np.ndarray]:
+    """Agglomerative hierarchical clustering."""
+    if params is None:
+        params = {"n_clusters": 4, "linkage": "ward"}
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    model = AgglomerativeClustering(**params)
+    labels = model.fit_predict(X_scaled)
+    return model, labels
+
+
+def train_dbscan(
+    X: np.ndarray, params: dict | None = None
+) -> Tuple[DBSCAN, np.ndarray]:
+    """Density-based clustering with noise points."""
+    if params is None:
+        params = {"eps": 0.8, "min_samples": 15}
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    model = DBSCAN(**params)
+    labels = model.fit_predict(X_scaled)
+    return model, labels
+
+
 def cluster_metrics(X: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
     """Compute clustering quality metrics."""
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
+    unique = np.unique(labels)
+    # Silhouette/DBI require at least 2 non-noise clusters.
+    valid_clusters = [c for c in unique if c != -1]
+    if len(valid_clusters) < 2:
+        return {
+            "silhouette_score": float("nan"),
+            "davies_bouldin_index": float("nan"),
+            "n_clusters": int(len(valid_clusters)),
+            "noise_ratio": float(np.mean(labels == -1)),
+        }
+
     sil = silhouette_score(X_scaled, labels)
     dbi = davies_bouldin_score(X_scaled, labels)
     return {
         "silhouette_score": float(sil),
         "davies_bouldin_index": float(dbi),
+        "n_clusters": int(len(valid_clusters)),
+        "noise_ratio": float(np.mean(labels == -1)),
     }
 
 

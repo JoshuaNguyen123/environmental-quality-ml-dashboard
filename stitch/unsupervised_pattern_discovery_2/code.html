@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Unsupervised Pattern Discovery - Data Scientist Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "surface-dark-hover": "#233648",
+                        "text-secondary": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111a22; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #324d67; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #137fec; 
+        }.code-block {
+            background-color: #272822;
+            color: #f8f8f2;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .token.keyword { color: #f92672; }
+        .token.function { color: #a6e22e; }
+        .token.string { color: #e6db74; }
+        .token.comment { color: #75715e; }
+        .token.number { color: #ae81ff; }
+        .token.operator { color: #f92672; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display antialiased overflow-hidden">
+<div class="flex h-screen w-full bg-background-light dark:bg-background-dark overflow-hidden">
+<aside class="hidden lg:flex w-72 flex-col justify-between border-r border-surface-dark-hover bg-background-dark p-4 shrink-0 overflow-y-auto">
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-3 pb-6 border-b border-surface-dark-hover">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-primary/20" data-alt="Profile picture of data scientist" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAT5KQLb797f-D5K4SpDkK4HjYSjZuJ-pM6Q5xihPrdPMlahovEXQJsNHqtUp0r26YyFyoUHhFA70ZA5EuQ_IkmAX8NLDwCEPMfVpGqzH8Nb5XxLIkVerEs_NIkLl0bwRGmi-RAijMVrrBlSdHEsam9q3Y2xgG3XQjAjuok-biwxegC1coTmpdT0-yz2IeN1Wo4eE-GRO_z9HA98-YMuumKECtTOR_6Zn8NJAPhT3G_J3M1pN_N8Tk5zuvdsn9EkbbV6wYSsel0lmk");'></div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-bold leading-tight">Dr. Alex Chen</h1>
+<p class="text-text-secondary text-xs font-normal">Data Scientist</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark-hover hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">home</span>
+<span class="text-sm font-medium">Overview</span>
+</a>
+<div class="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">Projects</div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark-hover hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">psychology</span>
+<span class="text-sm font-medium">Supervised Models</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-dark-hover text-white border-l-2 border-primary" href="#">
+<span class="material-symbols-outlined text-primary">hub</span>
+<span class="text-sm font-medium">Unsupervised Learning</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark-hover hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">videocam</span>
+<span class="text-sm font-medium">Live Streams</span>
+</a>
+</nav>
+</div>
+<div class="flex flex-col gap-2 pt-6 border-t border-surface-dark-hover">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark-hover hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary hover:bg-surface-dark-hover hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-red-400 transition-colors">logout</span>
+<span class="text-sm font-medium">Log Out</span>
+</a>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-dark relative">
+<header class="lg:hidden flex items-center justify-between p-4 border-b border-surface-dark-hover bg-background-dark z-20">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8" data-alt="Profile picture mobile" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCanF22TGGU--3j9qrjsg5klRHJVb95qEnjE2tF8sPfGM8G0bI-V2v-pV6jVK2X7ymWO24KeBMDFBQKOpmM-Jc3nihClEenvbzdj41COFv-4H2RNxwQQu3UFA4PRIkLsvr5sANHhXAXGmioWWTZsmqwlVcdFNgukW_ZZfIVkkBdFV31UUsh9JGAILTvWRL8IdNM2ucdvQxKYpgn2D7YWnOCbzzK5wISQYSpKC-hM8-ZLBIeYsAcnsIrPjnTLm8WkLeUrm2o4res8a4");'></div>
+<span class="font-bold text-white">Dr. Chen</span>
+</div>
+<button class="text-white p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+<div class="max-w-7xl mx-auto space-y-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+<div class="space-y-1">
+<h1 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Unsupervised Pattern Discovery</h1>
+<p class="text-text-secondary">Clustering and Dimensionality Reduction of regional microclimate data.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center gap-2 px-4 py-2 bg-surface-dark-hover hover:bg-surface-dark border border-surface-dark-hover rounded-lg text-text-secondary hover:text-white transition-all text-sm font-medium">
+<span class="material-symbols-outlined text-[20px]">download</span>
+                            Export Data
+                        </button>
+<button class="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg text-white transition-all text-sm font-medium shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">play_arrow</span>
+                            Run Analysis
+                        </button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-4 p-1">
+<div class="flex bg-surface-dark p-1 rounded-lg border border-surface-dark-hover">
+<label class="relative cursor-pointer">
+<input checked="" class="peer sr-only" name="viz-method" type="radio"/>
+<span class="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium text-text-secondary peer-checked:bg-primary peer-checked:text-white peer-checked:shadow-sm transition-all">
+<span class="material-symbols-outlined text-[18px]">scatter_plot</span>
+                                T-SNE
+                            </span>
+</label>
+<label class="relative cursor-pointer">
+<input class="peer sr-only" name="viz-method" type="radio"/>
+<span class="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium text-text-secondary peer-checked:bg-primary peer-checked:text-white peer-checked:shadow-sm transition-all">
+<span class="material-symbols-outlined text-[18px]">line_axis</span>
+                                PCA
+                            </span>
+</label>
+<label class="relative cursor-pointer">
+<input class="peer sr-only" name="viz-method" type="radio"/>
+<span class="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium text-text-secondary peer-checked:bg-primary peer-checked:text-white peer-checked:shadow-sm transition-all">
+<span class="material-symbols-outlined text-[18px]">schema</span>
+                                UMAP
+                            </span>
+</label>
+</div>
+<div class="h-8 w-px bg-surface-dark-hover hidden sm:block"></div>
+<div class="flex items-center gap-3 flex-1 min-w-[280px]">
+<span class="text-sm font-medium text-text-secondary whitespace-nowrap">Perplexity: <span class="text-white font-mono ml-1">30</span></span>
+<input class="w-full h-1.5 bg-surface-dark-hover rounded-lg appearance-none cursor-pointer accent-primary" max="50" min="5" type="range" value="30"/>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-2 relative group rounded-xl bg-surface-dark border border-surface-dark-hover overflow-hidden shadow-xl shadow-black/20 min-h-[400px] lg:min-h-[500px]">
+<div class="absolute top-4 right-4 z-20 flex bg-surface-dark-hover rounded-md p-0.5 border border-surface-dark-hover">
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only" name="view-mode-main" type="radio"/>
+<div class="px-3 py-1 text-xs font-medium text-text-secondary peer-checked:text-white peer-checked:bg-surface-dark rounded transition-all">
+                                    Visual
+                                </div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only" name="view-mode-main" type="radio"/>
+<div class="px-3 py-1 text-xs font-medium text-text-secondary peer-checked:text-white peer-checked:bg-surface-dark rounded transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">code</span>
+                                    Code
+                                </div>
+<div class="hidden peer-checked:block absolute top-12 right-0 w-[600px] max-w-[85vw] bg-[#272822] rounded-lg shadow-2xl z-30 border border-white/10 text-left">
+<div class="flex items-center justify-between px-4 py-2 border-b border-white/10 bg-[#1e1f1c] rounded-t-lg">
+<span class="text-xs text-gray-400 font-mono">analysis_pipeline.py</span>
+<div class="flex gap-1.5">
+<div class="size-2.5 rounded-full bg-red-500/80"></div>
+<div class="size-2.5 rounded-full bg-yellow-500/80"></div>
+<div class="size-2.5 rounded-full bg-green-500/80"></div>
+</div>
+</div>
+<pre class="code-block m-0 rounded-t-none text-xs"><code class="language-python"><span class="token keyword">import</span> pandas <span class="token keyword">as</span> pd
+<span class="token keyword">from</span> sklearn.decomposition <span class="token keyword">import</span> PCA
+<span class="token keyword">from</span> sklearn.cluster <span class="token keyword">import</span> KMeans
+<span class="token comment"># Load microclimate dataset</span>
+data = pd.read_csv(<span class="token string">"env_data_v2.csv"</span>)
+<span class="token comment"># Dimensionality Reduction with PCA</span>
+pca = PCA(n_components=<span class="token number">3</span>)
+components = pca.fit_transform(data_scaled)
+<span class="token comment"># Identify Clusters</span>
+kmeans = KMeans(n_clusters=<span class="token number">4</span>, random_state=<span class="token number">42</span>)
+clusters = kmeans.fit_predict(components)
+<span class="token keyword">return</span> {
+    <span class="token string">"coordinates"</span>: components,
+    <span class="token string">"labels"</span>: clusters, 
+    <span class="token string">"variance"</span>: pca.explained_variance_ratio_
+}</code></pre>
+</div>
+</label>
+</div>
+<div class="absolute inset-0 bg-cover bg-center opacity-80 mix-blend-screen" data-alt="Abstract 3D network visualization with glowing nodes" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB4ougUfvEeGYIXEj8ajGZ_1t__Di8qi5WZLuXtoMBL9b1Bj37PouZ9-tXxuEy5m9a5iX186n8PMGYmewbW9QWnzu-vJ4kXdkDDche6tbJpOcMZTZszEIHNP5LUPGXpo0B5zvghAmOLKtvXayiCRVcMHmvMqFBz4XT1loRL9VKxzxNCRFZfylxeYIJ7hmJoNAoTrwQYbsmzEI0O9m56DHC-7k-1f4G5OCCRvrRUPDAezl0_vehJPF9mE8FtLWnS3txTaI9D-L9-6RE');"></div>
+<div class="absolute top-4 left-4 z-10 bg-background-dark/80 backdrop-blur-md border border-white/10 p-3 rounded-lg shadow-lg pointer-events-none">
+<h3 class="text-white text-sm font-bold flex items-center gap-2">
+<span class="size-2 rounded-full bg-green-400 animate-pulse"></span>
+                                3D Cluster Visualization
+                            </h3>
+<p class="text-xs text-text-secondary mt-1">50,000 data points • 4 Clusters</p>
+</div>
+<div class="absolute bottom-4 right-4 z-10 flex gap-2">
+<button class="size-8 flex items-center justify-center bg-surface-dark text-white rounded hover:bg-primary transition-colors border border-white/10" title="Reset View">
+<span class="material-symbols-outlined text-[18px]">center_focus_strong</span>
+</button>
+<button class="size-8 flex items-center justify-center bg-surface-dark text-white rounded hover:bg-primary transition-colors border border-white/10" title="Rotate">
+<span class="material-symbols-outlined text-[18px]">3d_rotation</span>
+</button>
+</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+<div class="bg-black/50 backdrop-blur px-4 py-2 rounded-full border border-white/10">
+<p class="text-white text-xs font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">touch_app</span>
+                                    Click and drag to rotate
+                                </p>
+</div>
+</div>
+</div>
+<div class="lg:col-span-1 flex flex-col gap-6">
+<div class="bg-surface-dark border border-surface-dark-hover rounded-xl p-5 shadow-lg relative group">
+<div class="absolute top-4 right-4 z-20 flex bg-surface-dark-hover rounded-md p-0.5 border border-surface-dark-hover opacity-0 group-hover:opacity-100 transition-opacity">
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only" name="view-mode-sil" type="radio"/>
+<div class="px-2 py-0.5 text-[10px] font-medium text-text-secondary peer-checked:text-white peer-checked:bg-surface-dark rounded transition-all">
+                                        Viz
+                                    </div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only" name="view-mode-sil" type="radio"/>
+<div class="px-2 py-0.5 text-[10px] font-medium text-text-secondary peer-checked:text-white peer-checked:bg-surface-dark rounded transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">code</span>
+</div>
+<div class="hidden peer-checked:block absolute top-8 right-0 w-[300px] bg-[#272822] rounded-lg shadow-2xl z-30 border border-white/10 text-left">
+<div class="flex items-center justify-between px-3 py-1.5 border-b border-white/10 bg-[#1e1f1c] rounded-t-lg">
+<span class="text-[10px] text-gray-400 font-mono">silhouette_score.py</span>
+</div>
+<pre class="code-block m-0 rounded-t-none text-[10px] p-2 overflow-hidden"><code class="language-python"><span class="token keyword">from</span> sklearn.metrics <span class="token keyword">import</span> silhouette_score
+<span class="token comment"># Calculate coefficient</span>
+score = silhouette_score(
+    X=data_scaled, 
+    labels=cluster_labels,
+    metric=<span class="token string">'euclidean'</span>
+)
+<span class="token keyword">print</span>(<span class="token string">f"Silhouette: {score:.2f}"</span>)
+<span class="token comment"># Output: 0.65 (Strong)</span></code></pre>
+</div>
+</label>
+</div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-white font-bold text-lg">Silhouette Analysis</h3>
+<span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded border border-green-500/30">Strong Structure</span>
+</div>
+<div class="flex items-end justify-between mb-2">
+<span class="text-text-secondary text-sm">Global Score</span>
+<span class="text-white font-mono text-xl font-bold">0.65</span>
+</div>
+<div class="w-full bg-surface-dark-hover rounded-full h-1.5 mb-6">
+<div class="bg-primary h-1.5 rounded-full" style="width: 65%"></div>
+</div>
+<div class="space-y-4">
+<div class="group/bar">
+<div class="flex justify-between text-xs mb-1">
+<span class="text-gray-400 group-hover/bar:text-white transition-colors">Cluster 1 (High Temp)</span>
+<span class="text-primary font-mono">0.72</span>
+</div>
+<div class="flex gap-1 h-8 items-end">
+<div class="w-full bg-surface-dark-hover rounded-sm overflow-hidden flex items-end h-full">
+<div class="w-full bg-gradient-to-t from-primary/40 to-primary h-[72%] relative group-hover/bar:to-white transition-all"></div>
+</div>
+</div>
+</div>
+<div class="group/bar">
+<div class="flex justify-between text-xs mb-1">
+<span class="text-gray-400 group-hover/bar:text-white transition-colors">Cluster 2 (Arid)</span>
+<span class="text-purple-400 font-mono">0.58</span>
+</div>
+<div class="flex gap-1 h-8 items-end">
+<div class="w-full bg-surface-dark-hover rounded-sm overflow-hidden flex items-end h-full">
+<div class="w-full bg-gradient-to-t from-purple-500/40 to-purple-500 h-[58%] relative"></div>
+</div>
+</div>
+</div>
+<div class="group/bar">
+<div class="flex justify-between text-xs mb-1">
+<span class="text-gray-400 group-hover/bar:text-white transition-colors">Cluster 3 (Humid)</span>
+<span class="text-cyan-400 font-mono">0.61</span>
+</div>
+<div class="flex gap-1 h-8 items-end">
+<div class="w-full bg-surface-dark-hover rounded-sm overflow-hidden flex items-end h-full">
+<div class="w-full bg-gradient-to-t from-cyan-500/40 to-cyan-500 h-[61%] relative"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-dark border border-surface-dark-hover rounded-xl p-5 shadow-lg flex-1">
+<h3 class="text-white font-bold text-md mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-text-secondary text-[20px]">info</span>
+                                Model Parameters
+                            </h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-background-dark p-3 rounded-lg">
+<p class="text-xs text-text-secondary mb-1">Iterations</p>
+<p class="text-white font-mono font-medium">1,000</p>
+</div>
+<div class="bg-background-dark p-3 rounded-lg">
+<p class="text-xs text-text-secondary mb-1">Learning Rate</p>
+<p class="text-white font-mono font-medium">200.0</p>
+</div>
+<div class="col-span-2 bg-background-dark p-3 rounded-lg">
+<p class="text-xs text-text-secondary mb-1">Initialization</p>
+<p class="text-white font-mono font-medium">PCA (Principal Component Analysis)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-dark border border-surface-dark-hover rounded-xl shadow-lg overflow-hidden">
+<div class="p-5 border-b border-surface-dark-hover flex justify-between items-center">
+<h3 class="text-white text-lg font-bold">Cluster Characteristics</h3>
+<button class="text-primary hover:text-white text-sm font-medium transition-colors">View Detailed Report</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-dark-hover/50 text-text-secondary text-xs uppercase tracking-wider">
+<th class="p-4 font-semibold">Cluster ID</th>
+<th class="p-4 font-semibold">Dominant Feature</th>
+<th class="p-4 font-semibold">Avg Temp (°C)</th>
+<th class="p-4 font-semibold">Avg Humidity (%)</th>
+<th class="p-4 font-semibold">Data Points</th>
+<th class="p-4 font-semibold text-right">Confidence</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-surface-dark-hover text-gray-300">
+<tr class="hover:bg-surface-dark-hover/40 transition-colors group cursor-pointer">
+<td class="p-4 font-medium text-white flex items-center gap-3">
+<span class="size-3 rounded-full bg-primary shadow-[0_0_10px_rgba(19,127,236,0.6)]"></span>
+                                    Cluster 1
+                                </td>
+<td class="p-4">High PM2.5 Concentration</td>
+<td class="p-4 font-mono text-gray-400">28.4</td>
+<td class="p-4 font-mono text-gray-400">45%</td>
+<td class="p-4 font-mono text-white">12,403</td>
+<td class="p-4 text-right">
+<span class="inline-flex items-center px-2 py-1 rounded bg-green-500/10 text-green-400 text-xs font-medium border border-green-500/20">High</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-dark-hover/40 transition-colors group cursor-pointer">
+<td class="p-4 font-medium text-white flex items-center gap-3">
+<span class="size-3 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.6)]"></span>
+                                    Cluster 2
+                                </td>
+<td class="p-4">Low Atmospheric Pressure</td>
+<td class="p-4 font-mono text-gray-400">19.2</td>
+<td class="p-4 font-mono text-gray-400">32%</td>
+<td class="p-4 font-mono text-white">8,920</td>
+<td class="p-4 text-right">
+<span class="inline-flex items-center px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 text-xs font-medium border border-yellow-500/20">Medium</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-dark-hover/40 transition-colors group cursor-pointer">
+<td class="p-4 font-medium text-white flex items-center gap-3">
+<span class="size-3 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.6)]"></span>
+                                    Cluster 3
+                                </td>
+<td class="p-4">Extreme Humidity Levels</td>
+<td class="p-4 font-mono text-gray-400">24.5</td>
+<td class="p-4 font-mono text-gray-400">88%</td>
+<td class="p-4 font-mono text-white">15,100</td>
+<td class="p-4 text-right">
+<span class="inline-flex items-center px-2 py-1 rounded bg-green-500/10 text-green-400 text-xs font-medium border border-green-500/20">High</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-dark-hover/40 transition-colors group cursor-pointer">
+<td class="p-4 font-medium text-white flex items-center gap-3">
+<span class="size-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)]"></span>
+                                    Cluster 4
+                                </td>
+<td class="p-4">Stable Microclimate</td>
+<td class="p-4 font-mono text-gray-400">22.1</td>
+<td class="p-4 font-mono text-gray-400">55%</td>
+<td class="p-4 font-mono text-white">13,577</td>
+<td class="p-4 text-right">
+<span class="inline-flex items-center px-2 py-1 rounded bg-green-500/10 text-green-400 text-xs font-medium border border-green-500/20">High</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

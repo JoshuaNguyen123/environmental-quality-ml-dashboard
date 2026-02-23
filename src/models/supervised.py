@@ -2,7 +2,14 @@
 
 import numpy as np
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.ensemble import (
+    RandomForestRegressor,
+    RandomForestClassifier,
+    ExtraTreesRegressor,
+    ExtraTreesClassifier,
+    HistGradientBoostingRegressor,
+    HistGradientBoostingClassifier,
+)
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -50,6 +57,34 @@ def train_random_forest_reg(
     return pipe
 
 
+def train_extra_trees_reg(
+    X_train: np.ndarray, y_train: np.ndarray, params: dict | None = None
+) -> Pipeline:
+    """Extra Trees Regression: extremely randomized tree ensemble."""
+    if params is None:
+        params = {}
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("model", ExtraTreesRegressor(**params)),
+    ])
+    pipe.fit(X_train, y_train)
+    return pipe
+
+
+def train_hist_gradient_boosting_reg(
+    X_train: np.ndarray, y_train: np.ndarray, params: dict | None = None
+) -> Pipeline:
+    """Histogram-based gradient boosting regression."""
+    if params is None:
+        params = {}
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("model", HistGradientBoostingRegressor(**params)),
+    ])
+    pipe.fit(X_train, y_train)
+    return pipe
+
+
 # ===========================================================================
 # CLASSIFICATION
 # ===========================================================================
@@ -83,6 +118,34 @@ def train_random_forest_clf(
     pipe = Pipeline([
         ("scaler", StandardScaler()),
         ("model", RandomForestClassifier(**params)),
+    ])
+    pipe.fit(X_train, y_train)
+    return pipe
+
+
+def train_extra_trees_clf(
+    X_train: np.ndarray, y_train: np.ndarray, params: dict | None = None
+) -> Pipeline:
+    """Extra Trees Classifier: highly randomized tree ensemble."""
+    if params is None:
+        params = {}
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("model", ExtraTreesClassifier(**params)),
+    ])
+    pipe.fit(X_train, y_train)
+    return pipe
+
+
+def train_hist_gradient_boosting_clf(
+    X_train: np.ndarray, y_train: np.ndarray, params: dict | None = None
+) -> Pipeline:
+    """Histogram-based gradient boosting classifier."""
+    if params is None:
+        params = {}
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("model", HistGradientBoostingClassifier(**params)),
     ])
     pipe.fit(X_train, y_train)
     return pipe

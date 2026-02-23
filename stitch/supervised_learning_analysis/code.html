@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Supervised Learning Analysis - Environmental Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "card-dark": "#1a2233",
+                        "accent-success": "#0bda5e",
+                        "accent-error": "#fa6238",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .chart-grid {
+            background-image: radial-gradient(circle, #324467 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="w-72 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-background-dark h-screen sticky top-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<div>
+<h1 class="text-sm font-bold tracking-tight uppercase">EcoAnalytics</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Portfolio Dashboard</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary border border-primary/20" href="#">
+<span class="material-symbols-outlined text-[20px] fill-1">memory</span>
+<span class="text-sm font-semibold">Supervised Learning</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">bubble_chart</span>
+<span class="text-sm font-medium">Unsupervised Learning</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">sensors</span>
+<span class="text-sm font-medium">Live Streams</span>
+</a>
+<div class="pt-4 pb-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">System</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<button class="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+                Export Report
+            </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto">
+<!-- Header -->
+<header class="p-8 border-b border-slate-200 dark:border-slate-800 flex flex-wrap justify-between items-end gap-6 bg-white dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-10">
+<div class="space-y-2">
+<nav class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-wider">
+<a class="hover:text-primary transition-colors" href="#">Portfolio</a>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<span class="text-slate-900 dark:text-slate-100">Air Quality Project</span>
+</nav>
+<h2 class="text-4xl font-bold tracking-tight">Supervised Learning Analysis</h2>
+<p class="text-slate-500 dark:text-slate-400 max-w-2xl">Comparative performance analysis of regression models for Jakarta Air Quality Index (AQI) prediction using 2023 sensor data.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<select class="appearance-none bg-slate-100 dark:bg-card-dark border-none rounded-lg px-4 py-2 pr-10 text-sm font-semibold focus:ring-2 focus:ring-primary text-slate-900 dark:text-slate-100 cursor-pointer">
+<option>XGBoost Regressor (Active)</option>
+<option>Random Forest</option>
+<option>Linear Regression</option>
+<option>Neural Network (MLP)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">expand_more</span>
+</div>
+<button class="bg-slate-100 dark:bg-card-dark p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">refresh</span>
+</button>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Metric Cards -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl">analytics</span>
+</div>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">R-squared Score</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold">0.942</span>
+<span class="text-accent-success text-xs font-bold bg-accent-success/10 px-2 py-0.5 rounded-full">+2.1% vs avg</span>
+</div>
+<div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[94.2%]"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Mean Squared Error (MSE)</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold">12.45</span>
+<span class="text-accent-error text-xs font-bold bg-accent-error/10 px-2 py-0.5 rounded-full">-5.4% improvement</span>
+</div>
+<div class="mt-4 flex gap-1 items-end h-8">
+<div class="bg-slate-200 dark:bg-slate-800 w-full h-[60%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-800 w-full h-[80%] rounded-t-sm"></div>
+<div class="bg-slate-200 dark:bg-slate-800 w-full h-[40%] rounded-t-sm"></div>
+<div class="bg-primary w-full h-[20%] rounded-t-sm"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Mean Absolute Error (MAE)</p>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-3xl font-bold">3.18</span>
+<span class="text-accent-success text-xs font-bold bg-accent-success/10 px-2 py-0.5 rounded-full">Optimal Range</span>
+</div>
+<div class="mt-4 flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+<span>Min: 2.8</span>
+<span>Avg: 3.5</span>
+<span>Max: 4.2</span>
+</div>
+</div>
+</section>
+<!-- Visualizations -->
+<section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<!-- Predicted vs Actual Scatter -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">scatter_plot</span>
+                            Predicted vs. Actual AQI
+                        </h3>
+<div class="flex gap-2">
+<span class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+<span class="size-2 rounded-full bg-primary"></span> Predictions
+                            </span>
+<span class="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+<span class="size-2 rounded-full border border-primary"></span> Identity Line
+                            </span>
+</div>
+</div>
+<div class="p-6 chart-grid h-[400px] relative">
+<!-- Simulated Chart Content -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+<span class="text-xs font-medium">Visualization Layer (SVG Path Data)</span>
+</div>
+<div class="h-full w-full border-l-2 border-b-2 border-slate-300 dark:border-slate-700 relative">
+<!-- Diagonal Line -->
+<div class="absolute bottom-0 left-0 w-full h-[2px] bg-slate-300 dark:bg-slate-700 origin-bottom-left -rotate-45" style="width: 141%"></div>
+<!-- Scatter Points -->
+<div class="absolute bottom-[20%] left-[22%] size-2 rounded-full bg-primary shadow-[0_0_8px_rgba(19,91,236,0.6)]"></div>
+<div class="absolute bottom-[45%] left-[43%] size-2 rounded-full bg-primary shadow-[0_0_8px_rgba(19,91,236,0.6)]"></div>
+<div class="absolute bottom-[60%] left-[58%] size-2 rounded-full bg-primary shadow-[0_0_8px_rgba(19,91,236,0.6)]"></div>
+<div class="absolute bottom-[75%] left-[78%] size-2 rounded-full bg-primary shadow-[0_0_8px_rgba(19,91,236,0.6)]"></div>
+<div class="absolute bottom-[10%] left-[12%] size-2 rounded-full bg-primary opacity-60"></div>
+<div class="absolute bottom-[30%] left-[34%] size-2 rounded-full bg-primary opacity-60"></div>
+<div class="absolute bottom-[85%] left-[82%] size-2 rounded-full bg-primary opacity-60"></div>
+<div class="absolute bottom-[50%] left-[48%] size-2 rounded-full bg-primary opacity-60"></div>
+</div>
+<div class="absolute bottom-1 right-1 text-[10px] text-slate-400 font-bold">Actual Value</div>
+<div class="absolute top-1 left-8 text-[10px] text-slate-400 font-bold rotate-90 origin-top-left">Predicted Value</div>
+</div>
+</div>
+<!-- Feature Importance Bar Chart -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">bar_chart</span>
+                            Feature Importance (SHAP)
+                        </h3>
+<button class="text-xs font-bold text-primary hover:underline">View All Features</button>
+</div>
+<div class="p-8 space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between text-sm font-medium">
+<span>Particulate Matter (PM2.5)</span>
+<span>0.42</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[85%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm font-medium">
+<span>Nitrogen Dioxide (NO2)</span>
+<span>0.28</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+<div class="bg-primary/70 h-full w-[60%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm font-medium">
+<span>Relative Humidity</span>
+<span>0.15</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+<div class="bg-primary/50 h-full w-[35%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm font-medium">
+<span>Wind Speed</span>
+<span>0.09</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+<div class="bg-primary/30 h-full w-[20%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm font-medium">
+<span>Temperature (Celsius)</span>
+<span>0.06</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+<div class="bg-primary/20 h-full w-[12%]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Grid: Model Comparison & Live Feed -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Model Comparison Table -->
+<div class="lg:col-span-2 bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800">
+<h3 class="font-bold">Model Comparison Table</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+<th class="px-6 py-4">Model Name</th>
+<th class="px-6 py-4">R² Score</th>
+<th class="px-6 py-4">MSE</th>
+<th class="px-6 py-4">MAE</th>
+<th class="px-6 py-4 text-right">Training Time</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="bg-primary/5">
+<td class="px-6 py-4 text-sm font-bold flex items-center gap-2">
+<span class="size-2 rounded-full bg-primary"></span> XGBoost
+                                    </td>
+<td class="px-6 py-4 text-sm">0.942</td>
+<td class="px-6 py-4 text-sm">12.45</td>
+<td class="px-6 py-4 text-sm">3.18</td>
+<td class="px-6 py-4 text-sm text-right">1.4s</td>
+</tr>
+<tr>
+<td class="px-6 py-4 text-sm font-medium">Random Forest</td>
+<td class="px-6 py-4 text-sm">0.915</td>
+<td class="px-6 py-4 text-sm">15.22</td>
+<td class="px-6 py-4 text-sm">4.02</td>
+<td class="px-6 py-4 text-sm text-right">3.8s</td>
+</tr>
+<tr>
+<td class="px-6 py-4 text-sm font-medium">Linear Regression</td>
+<td class="px-6 py-4 text-sm">0.784</td>
+<td class="px-6 py-4 text-sm">24.10</td>
+<td class="px-6 py-4 text-sm">6.45</td>
+<td class="px-6 py-4 text-sm text-right">0.1s</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Live Weather Stream -->
+<div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">live_tv</span>
+                            Live Weather Data
+                        </h3>
+<span class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-accent-success animate-pulse"></span>
+<span class="text-[10px] font-bold text-accent-success uppercase tracking-widest">Live</span>
+</span>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">thermostat</span>
+<span class="text-sm font-medium">Temperature</span>
+</div>
+<span class="text-sm font-bold">28.4°C</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">humidity_mid</span>
+<span class="text-sm font-medium">Humidity</span>
+</div>
+<span class="text-sm font-bold">64%</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">air</span>
+<span class="text-sm font-medium">Wind Speed</span>
+</div>
+<span class="text-sm font-bold">12 km/h</span>
+</div>
+<div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Recent Predictions</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-xs">
+<span class="text-slate-500">14:30:05</span>
+<span class="font-bold text-primary">AQI 84 (Moderate)</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-slate-500">14:29:05</span>
+<span class="font-bold text-primary">AQI 85 (Moderate)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

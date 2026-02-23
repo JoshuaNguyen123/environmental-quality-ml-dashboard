@@ -38,3 +38,14 @@ data:
   missing_value_sentinel: -200
 
 random_state: 42
+
+live_weather:
+  # Defaults for the Streamlit "Live Weather (API)" tab.
+  # These do not affect the ML pipeline.
+  refresh_minutes: 3
+  default_city: "London"
+  default_hourly_variables:
+    - "temperature_2m"
+    - "relative_humidity_2m"
+    - "wind_speed_10m"
+  forecast_days: 3

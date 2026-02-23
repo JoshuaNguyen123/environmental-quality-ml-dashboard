@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""train_all.py — Run the complete ML pipeline end-to-end.
+"""train_all.py - Run the complete ML pipeline end-to-end.
 
 Usage:
     python scripts/train_all.py
@@ -36,10 +36,12 @@ from src.stats.diagnostics import variance_inflation_factor, residual_diagnostic
 from src.models.supervised import (
     train_linear_regression, train_random_forest_reg,
     train_logistic_regression, train_random_forest_clf,
+    train_extra_trees_reg, train_hist_gradient_boosting_reg,
+    train_extra_trees_clf, train_hist_gradient_boosting_clf,
 )
 from src.models.unsupervised import (
     train_kmeans, train_gmm, cluster_metrics,
-    build_cluster_summary, reduce_for_viz,
+    build_cluster_summary, reduce_for_viz, train_agglomerative, train_dbscan,
 )
 from src.models.deep_learning import train_mlp_regressor, train_mlp_classifier
 from src.models.evaluation import (
@@ -52,7 +54,7 @@ from src.business.threshold_analysis import threshold_sweep
 
 def main():
     print("=" * 70)
-    print("  AIR QUALITY ML PIPELINE — Full Training Run")
+    print("  AIR QUALITY ML PIPELINE - Full Training Run")
     print("=" * 70)
 
     cfg = load_project_config()
@@ -139,37 +141,43 @@ def main():
     print("    [done] Descriptive stats, hypothesis tests, correlation heatmap")
 
     # ═════════════════════════════════════════════════════════════════════
-    # 3. SUPERVISED — REGRESSION
+    # 3. SUPERVISED - REGRESSION
     # ═════════════════════════════════════════════════════════════════════
     print("\n[3/7] Training regression models...")
     supervised_results = {}
 
-    # Linear Regression
-    lr_model = train_linear_regression(X_train, y_train_reg)
-    lr_pred = lr_model.predict(X_test)
-    lr_metrics = regression_metrics(y_test_reg, lr_pred)
-    supervised_results["linear_regression"] = lr_metrics
-    save_model(lr_model, MODELS / "linear_regression.joblib")
+    reg_trainers = {
+        "linear_regression": lambda: train_linear_regression(X_train, y_train_reg),
+        "random_forest_reg": lambda: train_random_forest_reg(X_train, y_train_reg, mcfg["supervised"]["random_forest_reg"]["params"]),
+        "extra_trees_reg": lambda: train_extra_trees_reg(X_train, y_train_reg, mcfg["supervised"]["extra_trees_reg"]["params"]),
+        "hist_gradient_boosting_reg": lambda: train_hist_gradient_boosting_reg(
+            X_train, y_train_reg, mcfg["supervised"]["hist_gradient_boosting_reg"]["params"]
+        ),
+    }
 
-    # Diagnostics
+    regression_predictions = {}
+    regression_metrics_by_model = {}
+    for name, trainer in reg_trainers.items():
+        model = trainer()
+        pred = model.predict(X_test)
+        metrics = regression_metrics(y_test_reg, pred)
+        supervised_results[name] = metrics
+        save_model(model, MODELS / f"{name}.joblib")
+        residual_plot(y_test_reg, pred, str(FIGURES / f"residuals_{name}.png"), name.replace("_", " ").title())
+        regression_predictions[name] = pred
+        regression_metrics_by_model[name] = metrics
+        print(f"    {name:<24} - RMSE: {metrics['rmse']:.3f}, R2: {metrics['r2']:.3f}")
+
+    # Keep detailed diagnostics on linear regression for interpretability continuity
+    lr_pred = regression_predictions["linear_regression"]
     residuals = y_test_reg - lr_pred
-    residual_plot(y_test_reg, lr_pred, str(FIGURES / "residuals_linear_reg.png"), "Linear Regression")
     diag = residual_diagnostics(residuals)
     vif = variance_inflation_factor(X_train, feature_cols)
     supervised_results["linear_regression"]["diagnostics"] = diag
     supervised_results["linear_regression"]["vif"] = vif
-    print(f"    Linear Reg — RMSE: {lr_metrics['rmse']:.3f}, R²: {lr_metrics['r2']:.3f}")
-
-    # Random Forest Regression
-    rf_reg_model = train_random_forest_reg(X_train, y_train_reg, mcfg["supervised"]["random_forest_reg"]["params"])
-    rf_reg_pred = rf_reg_model.predict(X_test)
-    rf_reg_metrics = regression_metrics(y_test_reg, rf_reg_pred)
-    supervised_results["random_forest_reg"] = rf_reg_metrics
-    save_model(rf_reg_model, MODELS / "random_forest_reg.joblib")
-    print(f"    RF Reg     — RMSE: {rf_reg_metrics['rmse']:.3f}, R²: {rf_reg_metrics['r2']:.3f}")
 
     # ═════════════════════════════════════════════════════════════════════
-    # 4. SUPERVISED — CLASSIFICATION
+    # 4. SUPERVISED - CLASSIFICATION
     # ═════════════════════════════════════════════════════════════════════
     print("\n[4/7] Training classification models...")
 
@@ -178,33 +186,35 @@ def main():
     cm_data = {}
     cal_data = {}
 
-    # Logistic Regression
-    log_model = train_logistic_regression(X_train, y_train_clf, mcfg["supervised"]["logistic_reg"]["params"])
-    log_pred = log_model.predict(X_test)
-    log_proba = log_model.predict_proba(X_test)[:, 1]
-    log_metrics = classification_metrics(y_test_clf, log_pred, log_proba)
-    supervised_results["logistic_regression"] = log_metrics
-    save_model(log_model, MODELS / "logistic_reg.joblib")
-    roc_data["Logistic Reg"] = get_roc_data(y_test_clf, log_proba)
-    pr_data["Logistic Reg"] = get_pr_data(y_test_clf, log_proba)
-    cm_data["Logistic Reg"] = np.array(log_metrics["confusion_matrix"])
-    frac, mean_p = get_calibration_data(y_test_clf, log_proba)
-    cal_data["Logistic Reg"] = (frac, mean_p)
-    print(f"    Logistic   — AUC: {log_metrics['roc_auc']:.3f}, F1: {log_metrics['f1']:.3f}")
+    clf_trainers = {
+        "logistic_regression": lambda: train_logistic_regression(X_train, y_train_clf, mcfg["supervised"]["logistic_reg"]["params"]),
+        "random_forest_clf": lambda: train_random_forest_clf(X_train, y_train_clf, mcfg["supervised"]["random_forest_clf"]["params"]),
+        "extra_trees_clf": lambda: train_extra_trees_clf(X_train, y_train_clf, mcfg["supervised"]["extra_trees_clf"]["params"]),
+        "hist_gradient_boosting_clf": lambda: train_hist_gradient_boosting_clf(
+            X_train, y_train_clf, mcfg["supervised"]["hist_gradient_boosting_clf"]["params"]
+        ),
+    }
 
-    # Random Forest Classifier
-    rf_clf_model = train_random_forest_clf(X_train, y_train_clf, mcfg["supervised"]["random_forest_clf"]["params"])
-    rf_clf_pred = rf_clf_model.predict(X_test)
-    rf_clf_proba = rf_clf_model.predict_proba(X_test)[:, 1]
-    rf_clf_metrics = classification_metrics(y_test_clf, rf_clf_pred, rf_clf_proba)
-    supervised_results["random_forest_clf"] = rf_clf_metrics
-    save_model(rf_clf_model, MODELS / "random_forest_clf.joblib")
-    roc_data["RF Classifier"] = get_roc_data(y_test_clf, rf_clf_proba)
-    pr_data["RF Classifier"] = get_pr_data(y_test_clf, rf_clf_proba)
-    cm_data["RF Classifier"] = np.array(rf_clf_metrics["confusion_matrix"])
-    frac, mean_p = get_calibration_data(y_test_clf, rf_clf_proba)
-    cal_data["RF Classifier"] = (frac, mean_p)
-    print(f"    RF Clf     — AUC: {rf_clf_metrics['roc_auc']:.3f}, F1: {rf_clf_metrics['f1']:.3f}")
+    classification_probabilities = {}
+    classification_metrics_by_model = {}
+    for name, trainer in clf_trainers.items():
+        model = trainer()
+        pred = model.predict(X_test)
+        proba = model.predict_proba(X_test)[:, 1]
+        metrics = classification_metrics(y_test_clf, pred, proba)
+        supervised_results[name] = metrics
+        save_model(model, MODELS / f"{name}.joblib")
+
+        pretty = name.replace("_", " ").title()
+        roc_data[pretty] = get_roc_data(y_test_clf, proba)
+        pr_data[pretty] = get_pr_data(y_test_clf, proba)
+        cm_data[pretty] = np.array(metrics["confusion_matrix"])
+        frac, mean_p = get_calibration_data(y_test_clf, proba)
+        cal_data[pretty] = (frac, mean_p)
+        classification_probabilities[name] = proba
+        classification_metrics_by_model[name] = metrics
+
+        print(f"    {name:<24} - AUC: {metrics['roc_auc']:.3f}, F1: {metrics['f1']:.3f}")
 
     # ═════════════════════════════════════════════════════════════════════
     # 5. UNSUPERVISED LEARNING
@@ -222,9 +232,19 @@ def main():
     gmm_metrics = cluster_metrics(X_cluster, gmm_labels)
     save_model(gmm_model, MODELS / "gmm.joblib")
 
+    agg_model, agg_labels = train_agglomerative(X_cluster, mcfg["unsupervised"]["agglomerative"]["params"])
+    agg_metrics = cluster_metrics(X_cluster, agg_labels)
+    save_model(agg_model, MODELS / "agglomerative.joblib")
+
+    dbscan_model, dbscan_labels = train_dbscan(X_cluster, mcfg["unsupervised"]["dbscan"]["params"])
+    dbscan_metrics = cluster_metrics(X_cluster, dbscan_labels)
+    save_model(dbscan_model, MODELS / "dbscan.joblib")
+
     unsupervised_metrics = {
         "kmeans": km_metrics,
         "gmm": gmm_metrics,
+        "agglomerative": agg_metrics,
+        "dbscan": dbscan_metrics,
     }
     save_json(unsupervised_metrics, METRICS / "unsupervised_metrics.json")
 
@@ -238,50 +258,74 @@ def main():
     save_csv(summary, TABLES / "cluster_summary.csv")
     plot_cluster_profiles(summary, str(FIGURES / "cluster_profiles.png"))
 
-    print(f"    K-Means  — Silhouette: {km_metrics['silhouette_score']:.3f}")
-    print(f"    GMM      — Silhouette: {gmm_metrics['silhouette_score']:.3f}")
+    print(f"    K-Means  - Silhouette: {km_metrics['silhouette_score']:.3f}")
+    print(f"    GMM      - Silhouette: {gmm_metrics['silhouette_score']:.3f}")
+    print(f"    Agglom   - Silhouette: {agg_metrics['silhouette_score']:.3f}")
+    print(f"    DBSCAN   - Silhouette: {dbscan_metrics['silhouette_score']:.3f}")
 
     # ═════════════════════════════════════════════════════════════════════
     # 6. DEEP LEARNING BENCHMARK
     # ═════════════════════════════════════════════════════════════════════
     print("\n[6/7] Deep learning benchmark...")
-    dl_config = mcfg["deep_learning"]["mlp"]
+    deep_profiles = {k: v for k, v in mcfg["deep_learning"].items() if k.startswith("mlp")}
+    deep_metrics = {}
 
-    # Regression MLP
-    mlp_reg, reg_history = train_mlp_regressor(X_train, y_train_reg, X_val, y_val_reg, dl_config)
-    mlp_reg_pred = mlp_reg.predict(X_test)
-    mlp_reg_metrics = regression_metrics(y_test_reg, mlp_reg_pred)
-    training_curves(reg_history, str(FIGURES / "nn_training_curves.png"))
+    primary_reg_metrics = None
+    primary_clf_metrics = None
+    primary_reg_history = None
 
-    # Classification MLP
-    mlp_clf, clf_history = train_mlp_classifier(X_train, y_train_clf, X_val, y_val_clf, dl_config)
-    mlp_clf_pred = mlp_clf.predict(X_test)
-    mlp_clf_proba = mlp_clf.predict_proba(X_test)[:, 1]
-    mlp_clf_metrics = classification_metrics(y_test_clf, mlp_clf_pred, mlp_clf_proba)
+    for idx, (profile_name, dl_config) in enumerate(deep_profiles.items()):
+        reg_model, reg_history = train_mlp_regressor(X_train, y_train_reg, X_val, y_val_reg, dl_config)
+        reg_pred = reg_model.predict(X_test)
+        reg_metrics = regression_metrics(y_test_reg, reg_pred)
+        save_model(reg_model, MODELS / f"{profile_name}_regression.joblib")
 
-    # Add MLP to ROC/PR/CM plots
-    roc_data["MLP Classifier"] = get_roc_data(y_test_clf, mlp_clf_proba)
-    pr_data["MLP Classifier"] = get_pr_data(y_test_clf, mlp_clf_proba)
-    cm_data["MLP Classifier"] = np.array(mlp_clf_metrics["confusion_matrix"])
+        clf_model, clf_history = train_mlp_classifier(X_train, y_train_clf, X_val, y_val_clf, dl_config)
+        clf_pred = clf_model.predict(X_test)
+        clf_proba = clf_model.predict_proba(X_test)[:, 1]
+        clf_metrics = classification_metrics(y_test_clf, clf_pred, clf_proba)
+        save_model(clf_model, MODELS / f"{profile_name}_classifier.joblib")
 
-    deep_metrics = {
-        "mlp_regression": mlp_reg_metrics,
-        "mlp_classification": mlp_clf_metrics,
-        "training_epochs": len(reg_history["train_loss"]),
-    }
+        pretty = f"MLP {profile_name.replace('mlp', '').replace('_', ' ').strip() or 'Baseline'}".strip()
+        roc_data[pretty] = get_roc_data(y_test_clf, clf_proba)
+        pr_data[pretty] = get_pr_data(y_test_clf, clf_proba)
+        cm_data[pretty] = np.array(clf_metrics["confusion_matrix"])
+
+        deep_metrics[f"{profile_name}_regression"] = reg_metrics
+        deep_metrics[f"{profile_name}_classification"] = clf_metrics
+        deep_metrics[f"{profile_name}_training_epochs"] = len(reg_history["train_loss"])
+
+        if idx == 0:
+            primary_reg_metrics = reg_metrics
+            primary_clf_metrics = clf_metrics
+            primary_reg_history = reg_history
+            # Backward-compatible keys consumed by existing report/dashboard
+            deep_metrics["mlp_regression"] = reg_metrics
+            deep_metrics["mlp_classification"] = clf_metrics
+            deep_metrics["training_epochs"] = len(reg_history["train_loss"])
+            save_model(reg_model, MODELS / "nn_regression.joblib")
+            save_model(clf_model, MODELS / "nn_classifier.joblib")
+
+        print(
+            f"    {profile_name:<16} - RMSE: {reg_metrics['rmse']:.3f}, "
+            f"AUC: {clf_metrics.get('roc_auc', 0):.3f}, F1: {clf_metrics['f1']:.3f}"
+        )
+
+    if primary_reg_history is not None:
+        training_curves(primary_reg_history, str(FIGURES / "nn_training_curves.png"))
+
     save_json(deep_metrics, METRICS / "deep_metrics.json")
-    save_model(mlp_reg, MODELS / "nn_regression.joblib")
-    save_model(mlp_clf, MODELS / "nn_classifier.joblib")
-    print(f"    MLP Reg  — RMSE: {mlp_reg_metrics['rmse']:.3f}, R²: {mlp_reg_metrics['r2']:.3f}")
-    print(f"    MLP Clf  — AUC: {mlp_clf_metrics.get('roc_auc', 0):.3f}, F1: {mlp_clf_metrics['f1']:.3f}")
 
     # ═════════════════════════════════════════════════════════════════════
     # 7. THRESHOLD ANALYSIS & FINAL PLOTS
     # ═════════════════════════════════════════════════════════════════════
     print("\n[7/7] Threshold analysis & final artifacts...")
     cb = tcfg["cost_benefit"]
+    threshold_proba = classification_probabilities.get("random_forest_clf")
+    if threshold_proba is None:
+        threshold_proba = next(iter(classification_probabilities.values()))
     thresholds, f1s, evs, best_f1_t, best_ev_t = threshold_sweep(
-        y_test_clf, rf_clf_proba,
+        y_test_clf, threshold_proba,
         tp_benefit=cb["true_positive_benefit"],
         fp_cost=cb["false_positive_cost"],
         fn_cost=cb["false_negative_cost"],
@@ -302,21 +346,51 @@ def main():
 
     # Model comparison table
     comparison = []
-    comparison.append({"Model": "Linear Regression", "Task": "Regression",
-                       "RMSE": lr_metrics["rmse"], "MAE": lr_metrics["mae"], "R²": lr_metrics["r2"]})
-    comparison.append({"Model": "Random Forest", "Task": "Regression",
-                       "RMSE": rf_reg_metrics["rmse"], "MAE": rf_reg_metrics["mae"], "R²": rf_reg_metrics["r2"]})
-    comparison.append({"Model": "MLP (Neural Net)", "Task": "Regression",
-                       "RMSE": mlp_reg_metrics["rmse"], "MAE": mlp_reg_metrics["mae"], "R²": mlp_reg_metrics["r2"]})
-    comparison.append({"Model": "Logistic Regression", "Task": "Classification",
-                       "ROC-AUC": log_metrics.get("roc_auc"), "F1": log_metrics["f1"],
-                       "Precision": log_metrics["precision"], "Recall": log_metrics["recall"]})
-    comparison.append({"Model": "Random Forest", "Task": "Classification",
-                       "ROC-AUC": rf_clf_metrics.get("roc_auc"), "F1": rf_clf_metrics["f1"],
-                       "Precision": rf_clf_metrics["precision"], "Recall": rf_clf_metrics["recall"]})
-    comparison.append({"Model": "MLP (Neural Net)", "Task": "Classification",
-                       "ROC-AUC": mlp_clf_metrics.get("roc_auc"), "F1": mlp_clf_metrics["f1"],
-                       "Precision": mlp_clf_metrics["precision"], "Recall": mlp_clf_metrics["recall"]})
+    for model_name, metrics in regression_metrics_by_model.items():
+        comparison.append(
+            {
+                "Model": model_name.replace("_", " ").title(),
+                "Task": "Regression",
+                "RMSE": metrics["rmse"],
+                "MAE": metrics["mae"],
+                "R²": metrics["r2"],
+            }
+        )
+
+    if primary_reg_metrics is not None:
+        comparison.append(
+            {
+                "Model": "MLP (Neural Net)",
+                "Task": "Regression",
+                "RMSE": primary_reg_metrics["rmse"],
+                "MAE": primary_reg_metrics["mae"],
+                "R²": primary_reg_metrics["r2"],
+            }
+        )
+
+    for model_name, metrics in classification_metrics_by_model.items():
+        comparison.append(
+            {
+                "Model": model_name.replace("_", " ").title(),
+                "Task": "Classification",
+                "ROC-AUC": metrics.get("roc_auc"),
+                "F1": metrics["f1"],
+                "Precision": metrics["precision"],
+                "Recall": metrics["recall"],
+            }
+        )
+
+    if primary_clf_metrics is not None:
+        comparison.append(
+            {
+                "Model": "MLP (Neural Net)",
+                "Task": "Classification",
+                "ROC-AUC": primary_clf_metrics.get("roc_auc"),
+                "F1": primary_clf_metrics["f1"],
+                "Precision": primary_clf_metrics["precision"],
+                "Recall": primary_clf_metrics["recall"],
+            }
+        )
 
     comp_df = pd.DataFrame(comparison)
     save_csv(comp_df, TABLES / "model_comparison.csv")

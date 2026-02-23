@@ -1,143 +1,277 @@
-/* Air Quality Dashboard — Professional Neutral Theme (v2) */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+/* Environmental Analytics — Interface v3 (Stitch-inspired) */
 :root {
-    --bg: #0b0f14;
-    --panel: #0f1621;
-    --panel-2: #111a26;
-    --text: #e6eaf0;
-    --muted: #a9b4c2;
-    --border: rgba(255, 255, 255, 0.08);
-    --accent: #3b82f6;
-    --accent-2: #60a5fa;
-    --radius: 14px;
-  }
-  
-  /* App background */
-  [data-testid="stAppViewContainer"] {
-    background: var(--bg);
-  }
-  
-  /* Center content + consistent padding */
-  .block-container {
-    max-width: 1200px;
-    padding-top: 2.0rem;
-    padding-bottom: 2.5rem;
-  }
-  
-  /* Sidebar */
-  section[data-testid="stSidebar"] {
-    background: #0a0e13;
-    border-right: 1px solid var(--border);
-  }
-  section[data-testid="stSidebar"] * {
-    color: var(--text);
-  }
-  
-  /* Headings & text */
-  h1, h2, h3 {
-    color: var(--text) !important;
-    font-weight: 650 !important;
-    letter-spacing: -0.01em;
-  }
-  p, li, span, div {
-    color: var(--text);
-  }
-  small, .stCaptionContainer, [data-testid="stCaptionContainer"] {
-    color: var(--muted) !important;
-  }
-  
-  /* Subtle separators */
-  hr {
-    border-color: var(--border) !important;
-  }
-  
-  /* Hero header */
-  .aq-hero {
-    background: rgba(59, 130, 246, 0.10);
-    border: 1px solid rgba(59, 130, 246, 0.25);
-    padding: 18px 18px;
-    border-radius: var(--radius);
-  }
-  .aq-hero-title {
-    font-size: 2.05rem;
-    font-weight: 750;
-    line-height: 1.1;
-  }
-  .aq-hero-sub {
-    margin-top: 8px;
-    color: rgba(230, 234, 240, 0.75);
-  }
-  
-  /* Panel blocks */
-  .aq-panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 14px;
-  }
-  .aq-panel-title {
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-  .aq-panel-body {
-    color: rgba(230, 234, 240, 0.85);
-    line-height: 1.5;
-  }
-  
-  /* Metric cards (remove default metric “chip” look) */
-  div[data-testid="stMetric"] {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 14px;
-  }
-  div[data-testid="stMetric"] label {
-    color: var(--muted) !important;
-    font-weight: 600;
-  }
-  div[data-testid="stMetricValue"] {
-    color: var(--text) !important;
-  }
-  div[data-testid="stMetricDelta"] {
-    color: var(--muted) !important;
-  }
-  
-  /* Dataframes */
-  div[data-testid="stDataFrame"] {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 8px;
-  }
-  .stDataFrame {
-    font-size: 0.90rem;
-  }
-  
-  /* Expanders */
-  div[data-testid="stExpander"] {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  div[data-testid="stExpander"] summary {
-    color: var(--text);
-  }
-  
-  /* Sidebar radio -> menu feel */
-  [data-testid="stSidebar"] [role="radiogroup"] {
-    gap: 6px;
-  }
-  [data-testid="stSidebar"] label[data-testid="stWidgetLabel"] {
-    display: none; /* we supply our own label in Python */
-  }
-  [data-testid="stSidebar"] div[role="radio"] {
-    padding: 10px 10px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-  }
-  [data-testid="stSidebar"] div[role="radio"][aria-checked="true"] {
-    background: rgba(59, 130, 246, 0.12);
-    border: 1px solid rgba(59, 130, 246, 0.35);
-  }
+  --bg: #0b1220;
+  --panel: #101827;
+  --panel-2: #0f172a;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: rgba(148, 163, 184, 0.22);
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.18);
+  --radius: 10px;
+  --shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
+  --font-main: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  font-family: var(--font-main);
+}
+
+body {
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+}
+
+[data-testid="stAppViewContainer"] {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Hide Streamlit deploy/menu chrome */
+[data-testid="stToolbar"],
+[data-testid="stDeployButton"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide Streamlit header artifact */
+[data-testid="stHeader"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+}
+
+section[data-testid="stMain"] {
+  padding-top: 0.5rem;
+}
+
+.block-container {
+  max-width: 1280px;
+  padding-top: 2.25rem;
+  padding-bottom: 2rem;
+}
+
+h1, h2, h3 {
+  color: var(--text) !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em;
+}
+
+p, li, span, div, label {
+  color: var(--text);
+}
+
+small, .stCaptionContainer, [data-testid="stCaptionContainer"] {
+  color: var(--muted) !important;
+}
+
+hr {
+  border-color: var(--border) !important;
+}
+
+.aq-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+
+.aq-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aq-brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.aq-brand-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.aq-brand-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.aq-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.aq-chip {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aq-chip-live {
+  color: #93c5fd;
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+.aq-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.aq-section-header {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.aq-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.aq-section-sub {
+  margin-top: 6px;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.aq-panel {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.aq-panel-title {
+  font-weight: 650;
+  margin-bottom: 6px;
+}
+
+.aq-panel-body {
+  color: #d1d5db;
+  line-height: 1.5;
+}
+
+div[data-testid="stMetric"] {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+div[data-testid="stMetric"] label {
+  color: var(--muted) !important;
+  font-weight: 560;
+}
+
+div[data-testid="stMetricValue"] {
+  color: var(--text) !important;
+}
+
+div[data-testid="stDataFrame"] {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: var(--shadow);
+}
+
+.stDataFrame {
+  font-size: 0.9rem;
+}
+
+div[data-testid="stExpander"] {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+div[data-testid="stExpander"] summary {
+  color: var(--text);
+  font-weight: 600;
+}
+
+div[data-testid="stTabs"] {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+div[data-testid="stTabs"] button {
+  color: var(--muted);
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: 600;
+}
+
+div[data-testid="stTabs"] button[aria-selected="true"] {
+  color: var(--text);
+  background: var(--accent-soft);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+div[data-testid="stButton"] > button,
+div[data-testid="stDownloadButton"] > button {
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid rgba(59, 130, 246, 0.6);
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+}
+
+div[data-testid="stButton"] > button:hover,
+div[data-testid="stDownloadButton"] > button:hover {
+  filter: brightness(1.05);
+}
+
+div[data-testid="stTextInput"] input,
+div[data-testid="stNumberInput"] input,
+div[data-testid="stTextArea"] textarea,
+div[data-baseweb="select"] > div {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+}
+
+div[data-testid="stToggle"] label {
+  color: var(--text);
+  font-weight: 600;
+}

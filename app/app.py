@@ -5,23 +5,38 @@ Run (from repo root):
     streamlit run app/app.py
 """
 
+import json
+import logging
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlencode
+from urllib.error import URLError, HTTPError
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 
-from src.utils.io import load_json
+from src.utils.io import load_json, load_project_config
+
+LOGGER = logging.getLogger(__name__)
+
+try:
+    import altair as alt
+except Exception:  # pragma: no cover (optional runtime dependency via Streamlit)
+    alt = None
 
 # ── Page config ──────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Air Quality ML Dashboard",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # ── Load custom CSS ──────────────────────────────────────────────────────
@@ -29,6 +44,25 @@ CSS_PATH = Path(__file__).parent / "style.css"
 if CSS_PATH.exists():
     st.markdown(
     "<style>" + CSS_PATH.read_bytes().decode("utf-8", errors="replace") + "</style>",
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    f"""
+    <div class="aq-topbar">
+      <div class="aq-brand">
+        <div class="aq-brand-mark">EA</div>
+        <div class="aq-brand-text">
+          <div class="aq-brand-title">EcoAnalytics</div>
+          <div class="aq-brand-sub">Environmental Quality ML Console</div>
+        </div>
+      </div>
+      <div class="aq-topbar-right">
+        <div class="aq-chip aq-chip-live"><span class="aq-dot"></span>API Connected</div>
+        <div class="aq-chip">Session: {datetime.now().strftime("%Y-%m-%d %H:%M")}</div>
+      </div>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -74,9 +108,9 @@ def image_if_exists(path: Path, caption: str | None = None):
 def section_header(title: str, subtitle: str | None = None):
     st.markdown(
         f"""
-        <div class="aq-hero">
-          <div class="aq-hero-title">{title}</div>
-          {f'<div class="aq-hero-sub">{subtitle}</div>' if subtitle else ''}
+        <div class="aq-section-header">
+          <div class="aq-section-title">{title}</div>
+          {f'<div class="aq-section-sub">{subtitle}</div>' if subtitle else ''}
         </div>
         """,
         unsafe_allow_html=True,
@@ -84,30 +118,517 @@ def section_header(title: str, subtitle: str | None = None):
     st.write("")
 
 
+@st.cache_data(show_spinner=False, ttl=600)
+def http_get_json(url: str) -> dict:
+    req = Request(url, headers={"User-Agent": "air-quality-ml-dashboard/1.0"})
+    try:
+        with urlopen(req, timeout=15) as resp:
+            raw = resp.read().decode("utf-8")
+        return json.loads(raw)
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
+        LOGGER.warning("Weather request failed for url=%s: %s", url, exc)
+        raise RuntimeError("Weather service is temporarily unavailable.") from exc
+
+
+@st.cache_data(show_spinner=False, ttl=24 * 60 * 60)
+def search_geocode_open_meteo(city: str, *, count: int = 6) -> list[dict]:
+    url = "https://geocoding-api.open-meteo.com/v1/search?" + urlencode(
+        {"name": city, "count": int(count), "language": "en", "format": "json"}
+    )
+    data = http_get_json(url)
+    results = data.get("results") if isinstance(data, dict) else None
+    if not results:
+        return []
+    out: list[dict] = []
+    for r in results:
+        if isinstance(r, dict) and "latitude" in r and "longitude" in r:
+            out.append(r)
+    return out
+
+
+def refresh_bucket(refresh_minutes: int) -> int:
+    m = max(1, int(refresh_minutes))
+    return int(time.time() // (m * 60))
+
+
+def format_geocode_result(r: dict) -> str:
+    name = r.get("name") or "Unknown"
+    admin1 = r.get("admin1")
+    country = r.get("country")
+    parts = [p for p in [name, admin1, country] if p]
+    lat = r.get("latitude")
+    lon = r.get("longitude")
+    suffix = ""
+    try:
+        suffix = f" — ({float(lat):.4f}, {float(lon):.4f})"
+    except Exception:
+        suffix = ""
+    return ", ".join(parts) + suffix
+
+
+@st.cache_data(show_spinner=False, ttl=600)
+def fetch_open_meteo_forecast(
+    *,
+    latitude: float,
+    longitude: float,
+    hourly_vars: list[str],
+    daily_vars: list[str],
+    current_vars: list[str],
+    past_days: int = 1,
+    forecast_days: int = 3,
+    cache_bucket: int = 0,
+) -> dict:
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "timezone": "auto",
+        "past_days": past_days,
+        "forecast_days": forecast_days,
+    }
+    if hourly_vars:
+        params["hourly"] = ",".join(hourly_vars)
+    if daily_vars:
+        params["daily"] = ",".join(daily_vars)
+    if current_vars:
+        params["current"] = ",".join(current_vars)
+
+    url = "https://api.open-meteo.com/v1/forecast?" + urlencode(params)
+    data = http_get_json(url)
+    if isinstance(data, dict) and data.get("error"):
+        raise RuntimeError(data.get("reason", "Open-Meteo error"))
+    return data
+
+
+def open_meteo_hourly_to_df(payload: dict, vars_: list[str]) -> pd.DataFrame:
+    hourly = payload.get("hourly", {}) if isinstance(payload, dict) else {}
+    times = hourly.get("time", [])
+    if not times:
+        return pd.DataFrame()
+    df = pd.DataFrame({"time": pd.to_datetime(times)})
+    for v in vars_:
+        if v in hourly:
+            df[v] = hourly[v]
+    return df.set_index("time")
+
+
+def open_meteo_daily_to_df(payload: dict, vars_: list[str]) -> pd.DataFrame:
+    daily = payload.get("daily", {}) if isinstance(payload, dict) else {}
+    times = daily.get("time", [])
+    if not times:
+        return pd.DataFrame()
+    # pd.to_datetime(list[str]) returns a DatetimeIndex (no .dt accessor)
+    df = pd.DataFrame({"date": pd.to_datetime(times).date})
+    for v in vars_:
+        if v in daily:
+            df[v] = daily[v]
+    return df.set_index("date")
+
+
+def trigger_auto_refresh(interval_minutes: int):
+    ms = max(1, int(interval_minutes)) * 60 * 1000
+    components.html(
+        f"""
+        <script>
+            window.setTimeout(function() {{
+                window.parent.location.reload();
+            }}, {ms});
+        </script>
+        """,
+        height=0,
+    )
+
+
+def should_allow_refresh() -> bool:
+    """Throttle manual refreshes to reduce API pressure in production."""
+    now = time.time()
+    last = float(st.session_state.get("last_live_refresh_epoch", 0.0))
+    min_seconds = 15
+    if now - last < min_seconds:
+        wait_for = max(1, int(min_seconds - (now - last)))
+        st.info(f"Please wait {wait_for}s before refreshing again.")
+        return False
+    st.session_state["last_live_refresh_epoch"] = now
+    return True
+
+
+LIVE_WEATHER_META: dict[str, dict[str, str]] = {
+    "temperature_2m": {
+        "label": "Temperature (2m)",
+        "meaning": "Air temperature at 2 meters above ground.",
+    },
+    "relative_humidity_2m": {
+        "label": "Relative Humidity (2m)",
+        "meaning": "Relative humidity at 2 meters above ground (0–100%).",
+    },
+    "wind_speed_10m": {
+        "label": "Wind Speed (10m)",
+        "meaning": "Wind speed at 10 meters above ground.",
+    },
+    "precipitation": {
+        "label": "Precipitation (hourly sum)",
+        "meaning": "Total precipitation over the preceding hour (rain + showers + snow).",
+    },
+    "cloud_cover": {
+        "label": "Cloud Cover (total)",
+        "meaning": "Total cloud cover as an area fraction (0–100%).",
+    },
+    "uv_index_max": {
+        "label": "UV Index (daily max)",
+        "meaning": "Daily maximum UV index (dimensionless). Typical range 0–11+.",
+    },
+}
+
+
+def render_single_series_chart(
+    *,
+    df: pd.DataFrame,
+    x_col: str,
+    y_col: str,
+    title: str,
+    unit: str | None,
+    height: int = 240,
+):
+    if alt is None:
+        st.line_chart(df.set_index(x_col)[[y_col]], height=height)
+        return
+
+    y_title = f"{title} ({unit})" if unit else title
+    c = (
+        alt.Chart(df)
+        .mark_line()
+        .encode(
+            x=alt.X(f"{x_col}:T", title="Time (local)"),
+            y=alt.Y(f"{y_col}:Q", title=y_title),
+            tooltip=[
+                alt.Tooltip(f"{x_col}:T", title="Time"),
+                alt.Tooltip(f"{y_col}:Q", title=title, format=".3f"),
+            ],
+        )
+        .properties(height=height)
+        .interactive()
+    )
+    st.altair_chart(c, use_container_width=True)
+
+
+def render_live_weather_panel():
+    try:
+        project_cfg = load_project_config()
+        live_cfg = project_cfg.get("live_weather", {}) if isinstance(project_cfg, dict) else {}
+    except Exception:
+        live_cfg = {}
+
+    default_refresh_minutes = int(live_cfg.get("refresh_minutes", 3) or 3)
+    default_city = live_cfg.get("default_city", "London")
+    default_hourly = live_cfg.get("default_hourly_variables", ["temperature_2m", "relative_humidity_2m", "wind_speed_10m"])
+    default_days = int(live_cfg.get("forecast_days", 3) or 3)
+
+    st.markdown(
+        """
+        <div class="aq-panel">
+          <div class="aq-panel-title">Data source</div>
+          <div class="aq-panel-body">
+            Live weather data is provided by Open-Meteo (keyless). Refresh cadence is configurable.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.write("")
+
+    if "live_weather_refresh_nonce" not in st.session_state:
+        st.session_state["live_weather_refresh_nonce"] = 0
+
+    colA, colB = st.columns([1.2, 1.0])
+    with colB:
+        refresh_minutes = st.select_slider(
+            "Auto-refresh interval",
+            options=[1, 2, 3, 4, 5],
+            value=max(1, min(5, default_refresh_minutes)),
+            help="Refresh cadence for reloading weather values.",
+            key="live_weather_refresh_interval",
+        )
+        auto_refresh = st.toggle(
+            "Auto-refresh",
+            value=False,
+            key="live_weather_auto_refresh",
+            help="Disabled by default in production to reduce unnecessary API traffic.",
+        )
+        forecast_days = st.slider(
+            "Forecast window (days)",
+            min_value=1,
+            max_value=7,
+            value=max(1, min(7, default_days)),
+            key="live_weather_forecast_days",
+        )
+        if st.button("Refresh now", use_container_width=True, key="live_weather_refresh_button"):
+            if should_allow_refresh():
+                st.session_state["live_weather_refresh_nonce"] += 1
+                st.rerun()
+
+    with colA:
+        st.markdown("#### Location")
+
+        with st.expander("What location inputs work?"):
+            st.markdown(
+                """
+                You have two ways to choose a location:
+
+                - **Search by name (geocoding)**: type a place name and pick the best match from the results list.
+                  - Examples: `London`, `Paris`, `Seattle`, `Springfield, IL`, `Cambridge, UK`
+                  - If the name is ambiguous, you’ll see **multiple matches** (different countries/states).
+                - **Manual coordinates**: directly enter latitude/longitude.
+
+                Notes:
+                - If you’re getting no results, try adding a region/country (e.g. `Portland, OR` vs `Portland`).
+                """
+            )
+
+        if "live_weather_city" not in st.session_state:
+            st.session_state["live_weather_city"] = str(default_city)
+
+        def _apply_quick_pick():
+            pick = st.session_state.get("live_weather_quick_pick")
+            if pick and pick != "(custom)":
+                st.session_state["live_weather_city"] = pick
+
+        st.selectbox(
+            "Quick picks",
+            options=[
+                "(custom)",
+                "London",
+                "New York",
+                "Los Angeles",
+                "Chicago",
+                "Seattle",
+                "Paris",
+                "Berlin",
+                "Tokyo",
+                "Delhi",
+                "Sydney",
+            ],
+            key="live_weather_quick_pick",
+            on_change=_apply_quick_pick,
+            help="Optional. Selecting a quick pick will populate the search box below.",
+        )
+
+        city = st.text_input(
+            "City / place search",
+            key="live_weather_city",
+            help="Used for geocoding (lat/lon). Examples: 'Springfield, IL', 'Cambridge, UK'.",
+        )
+
+        use_manual = st.toggle("Use manual coordinates", value=False, help="If geocoding is unreliable, use lat/lon directly.")
+        if use_manual:
+            lat = st.number_input("Latitude", value=51.5074, format="%.6f")
+            lon = st.number_input("Longitude", value=-0.1278, format="%.6f")
+        else:
+            query = city.strip() if city else ""
+            matches = search_geocode_open_meteo(query) if query else []
+            if not matches:
+                st.warning("Could not geocode that city. Try a different spelling or switch to manual coordinates.")
+                lat, lon = None, None
+            else:
+                if len(matches) > 1:
+                    st.caption(f"Found **{len(matches)}** matches. Pick the correct one below.")
+                idx = st.selectbox(
+                    "Geocoding matches",
+                    options=list(range(len(matches))),
+                    format_func=lambda i: format_geocode_result(matches[i]),
+                )
+                geo = matches[int(idx)]
+                lat = float(geo["latitude"])
+                lon = float(geo["longitude"])
+                st.caption(f"Using: **{format_geocode_result(geo)}**")
+
+    hourly_options = {
+        "temperature_2m": "Temperature (2m)",
+        "relative_humidity_2m": "Relative Humidity (2m)",
+        "wind_speed_10m": "Wind Speed (10m)",
+        "precipitation": "Precipitation (hourly sum)",
+        "cloud_cover": "Cloud Cover (total)",
+    }
+    daily_options = {
+        "uv_index_max": "UV Index (daily max)",
+    }
+
+    selected_hourly = st.multiselect(
+        "Hourly variables",
+        options=list(hourly_options.keys()),
+        default=[v for v in default_hourly if v in hourly_options] or list(hourly_options.keys())[:3],
+        format_func=lambda k: hourly_options.get(k, k),
+    )
+    selected_daily = st.multiselect(
+        "Daily variables",
+        options=list(daily_options.keys()),
+        default=["uv_index_max"],
+        format_func=lambda k: daily_options.get(k, k),
+    )
+
+    if auto_refresh:
+        trigger_auto_refresh(refresh_minutes)
+
+    if lat is None or lon is None:
+        st.info("Select a location to load live weather data.")
+        payload = None
+    else:
+        bucket = refresh_bucket(refresh_minutes) + int(st.session_state.get("live_weather_refresh_nonce", 0))
+        try:
+            payload = fetch_open_meteo_forecast(
+                latitude=float(lat),
+                longitude=float(lon),
+                hourly_vars=selected_hourly,
+                daily_vars=selected_daily,
+                current_vars=[v for v in selected_hourly if v in ("temperature_2m", "relative_humidity_2m", "wind_speed_10m")],
+                past_days=1,
+                forecast_days=int(forecast_days),
+                cache_bucket=bucket,
+            )
+        except RuntimeError:
+            st.error("Weather API request failed. Please retry in a moment.")
+            payload = None
+
+    if payload is None:
+        st.info("Weather data unavailable.")
+        current = {}
+        current_units = {}
+        hourly_units = {}
+        daily_units = {}
+        hourly_df = pd.DataFrame()
+        daily_df = pd.DataFrame()
+        tz = None
+    else:
+        current = payload.get("current", {}) if isinstance(payload, dict) else {}
+        current_units = payload.get("current_units", {}) if isinstance(payload, dict) else {}
+        hourly_units = payload.get("hourly_units", {}) if isinstance(payload, dict) else {}
+        daily_units = payload.get("daily_units", {}) if isinstance(payload, dict) else {}
+        hourly_df = open_meteo_hourly_to_df(payload, selected_hourly)
+        daily_df = open_meteo_daily_to_df(payload, selected_daily)
+        tz = payload.get("timezone") if isinstance(payload, dict) else None
+        st.caption("Cadence: Open-Meteo forecast model data is typically hourly (with daily aggregates).")
+
+    if tz:
+        st.caption(f"Timezone: `{tz}` (API returns timestamps in this local timezone)")
+    st.caption(
+        f"Last refreshed: `{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}`"
+        + (f" — next auto-refresh in ~{refresh_minutes} minute(s)." if auto_refresh else "")
+    )
+
+    if isinstance(current, dict) and current:
+        st.subheader("Current conditions")
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            if "temperature_2m" in current:
+                st.metric(
+                    "Temperature",
+                    f"{current.get('temperature_2m')} {current_units.get('temperature_2m', '')}".strip(),
+                )
+        with m2:
+            if "relative_humidity_2m" in current:
+                st.metric(
+                    "Humidity",
+                    f"{current.get('relative_humidity_2m')} {current_units.get('relative_humidity_2m', '')}".strip(),
+                )
+        with m3:
+            if "wind_speed_10m" in current:
+                st.metric(
+                    "Wind Speed",
+                    f"{current.get('wind_speed_10m')} {current_units.get('wind_speed_10m', '')}".strip(),
+                )
+        if "time" in current:
+            st.caption(f"Current time: `{current.get('time')}` (local to the selected timezone)")
+
+    st.write("")
+    st.subheader("Hourly series")
+    if hourly_df.empty:
+        st.info("No hourly data returned for the selected variables.")
+    else:
+        now = datetime.now()
+        start = now - pd.Timedelta(hours=24)
+        end = now + pd.Timedelta(days=int(forecast_days))
+        view = hourly_df[(hourly_df.index >= start) & (hourly_df.index <= end)].copy()
+        if view.empty:
+            st.info("No hourly points in the selected time window.")
+        else:
+            for v in selected_hourly:
+                if v not in view.columns:
+                    continue
+                meta = LIVE_WEATHER_META.get(v, {})
+                label = meta.get("label", v)
+                meaning = meta.get("meaning", "")
+                unit = hourly_units.get(v, "")
+
+                st.markdown(f"**{label}**")
+                if meaning:
+                    st.caption(meaning + (f" Unit: `{unit}`" if unit else ""))
+
+                d = view[[v]].reset_index().rename(columns={"time": "time", v: "value"})
+                render_single_series_chart(
+                    df=d,
+                    x_col="time",
+                    y_col="value",
+                    title=label,
+                    unit=unit,
+                    height=240,
+                )
+
+        with st.expander("Show hourly data table"):
+            st.dataframe(view.reset_index(), use_container_width=True, hide_index=True, height=320)
+
+    if selected_daily:
+        st.write("")
+        st.subheader("Daily series")
+        if daily_df.empty:
+            st.info("No daily data returned for the selected variables.")
+        else:
+            for v in selected_daily:
+                if v not in daily_df.columns:
+                    continue
+                meta = LIVE_WEATHER_META.get(v, {})
+                label = meta.get("label", v)
+                meaning = meta.get("meaning", "")
+                unit = daily_units.get(v, "")
+
+                st.markdown(f"**{label}**")
+                if meaning:
+                    st.caption(meaning + (f" Unit: `{unit}`" if unit else ""))
+
+                d = daily_df[[v]].reset_index().rename(columns={"date": "date", v: "value"})
+                d["date"] = pd.to_datetime(d["date"])
+                render_single_series_chart(
+                    df=d,
+                    x_col="date",
+                    y_col="value",
+                    title=label,
+                    unit=unit,
+                    height=220,
+                )
+
+            with st.expander("Show daily data table"):
+                st.dataframe(daily_df.reset_index(), use_container_width=True, hide_index=True, height=240)
+
 # ═════════════════════════════════════════════════════════════════════════
-# SIDEBAR
+# NAVIGATION (Tabs)
 # ═════════════════════════════════════════════════════════════════════════
-st.sidebar.markdown("### Navigation")
-section = st.sidebar.radio(
-    "Navigation",
-    [
-        "Executive Summary",
-        "Statistical Overview",
-        "Supervised Models",
-        "Unsupervised Regimes",
-        "Deep Learning Benchmark",
-        "Policy Implications",
-    ],
-    label_visibility="collapsed",
-)
-st.sidebar.markdown("---")
-st.sidebar.caption("Air Quality ML Dashboard v1.0")
+tab_labels = [
+    "Executive Summary",
+    "Statistical Overview",
+    "Supervised Models",
+    "Unsupervised Regimes",
+    "Deep Learning Benchmark",
+    "Policy Implications",
+    "Live Weather (API)",
+]
+show_live_weather = st.toggle("Quick Access: Show Live Weather Panel", value=False, key="quick_access_live_weather")
+if show_live_weather:
+    render_live_weather_panel()
+    st.divider()
+tabs = st.tabs(tab_labels)
 
 
 # ═════════════════════════════════════════════════════════════════════════
 # 1) EXECUTIVE SUMMARY
 # ═════════════════════════════════════════════════════════════════════════
-if section == "Executive Summary":
+with tabs[0]:
     section_header(
         "Air Quality Risk Modeling & Environmental Pattern Analysis",
         "End-to-end ML pipeline for urban pollution forecasting, event detection, and regime discovery.",
@@ -166,7 +687,7 @@ if section == "Executive Summary":
 # ═════════════════════════════════════════════════════════════════════════
 # 2) STATISTICAL OVERVIEW
 # ═════════════════════════════════════════════════════════════════════════
-elif section == "Statistical Overview":
+with tabs[1]:
     section_header("Statistical Overview", "Descriptive statistics, correlations, and hypothesis tests.")
 
     stats = load_metric_file("stats_summary.json")
@@ -213,43 +734,65 @@ elif section == "Statistical Overview":
 # ═════════════════════════════════════════════════════════════════════════
 # 3) SUPERVISED MODELS
 # ═════════════════════════════════════════════════════════════════════════
-elif section == "Supervised Models":
+with tabs[2]:
     section_header("Supervised Models", "Regression for NO₂ prediction and classification for high-pollution events.")
 
     sup = load_metric_file("supervised_metrics.json")
 
-    # --- Regression summary cards (robust + consistent) ---
+    def _pretty(name: str) -> str:
+        return name.replace("_", " ").title()
+
+    # --- Regression summary ---
     st.subheader("Regression — NO₂ Prediction")
 
-    reg_candidates = [
-        ("Linear Regression", sup.get("linear_regression", {})),
-        ("Random Forest", sup.get("random_forest_regression", sup.get("random_forest", {}))),
-        ("MLP (Neural Net)", sup.get("mlp_regression", {})),
-    ]
-    reg_candidates = [(n, m) for (n, m) in reg_candidates if isinstance(m, dict) and len(m) > 0]
+    reg_candidates = []
+    if isinstance(sup, dict):
+        for k, m in sup.items():
+            if isinstance(m, dict) and "rmse" in m and "r2" in m:
+                reg_candidates.append((k, m))
 
     if reg_candidates:
-        cols = st.columns(len(reg_candidates))
-        for col, (name, m) in zip(cols, reg_candidates):
-            with col:
-                st.markdown(f"**{name}**")
-                st.markdown(f"- RMSE: **{fmt3(m.get('rmse'))}**")
-                st.markdown(f"- MAE: **{fmt3(m.get('mae'))}**")
-                st.markdown(f"- R²: **{fmt3(m.get('r2'))}**")
+        reg_df = pd.DataFrame(
+            [
+                {"Model": _pretty(k), "RMSE": m.get("rmse"), "MAE": m.get("mae"), "R²": m.get("r2")}
+                for k, m in reg_candidates
+            ]
+        ).sort_values("RMSE", ascending=True)
+        st.dataframe(reg_df, use_container_width=True, hide_index=True, height=260)
     else:
         st.info("Regression metrics not available yet.")
 
     st.write("")
 
     st.subheader("Residual Diagnostics")
-    image_if_exists(FIGURES / "residuals_linear_reg.png")
-    image_if_exists(FIGURES / "residuals_random_forest.png")
-    image_if_exists(FIGURES / "residuals_mlp_reg.png")
+    for key, _m in reg_candidates:
+        image_if_exists(FIGURES / f"residuals_{key}.png", caption=_pretty(key))
 
     st.write("")
 
-    # --- Classification visuals ---
+    # --- Classification summary + visuals ---
     st.subheader("Classification — High Pollution Detection")
+    clf_candidates = []
+    if isinstance(sup, dict):
+        for k, m in sup.items():
+            if isinstance(m, dict) and "f1" in m and "precision" in m and "recall" in m:
+                clf_candidates.append((k, m))
+
+    if clf_candidates:
+        clf_df = pd.DataFrame(
+            [
+                {
+                    "Model": _pretty(k),
+                    "ROC-AUC": m.get("roc_auc"),
+                    "PR-AUC": m.get("pr_auc"),
+                    "F1": m.get("f1"),
+                    "Precision": m.get("precision"),
+                    "Recall": m.get("recall"),
+                }
+                for k, m in clf_candidates
+            ]
+        ).sort_values("F1", ascending=False)
+        st.dataframe(clf_df, use_container_width=True, hide_index=True, height=260)
 
     for fig_name, title in [
         ("roc_curves.png", "ROC Curves"),
@@ -271,7 +814,7 @@ elif section == "Supervised Models":
 # ═════════════════════════════════════════════════════════════════════════
 # 4) UNSUPERVISED REGIMES
 # ═════════════════════════════════════════════════════════════════════════
-elif section == "Unsupervised Regimes":
+with tabs[3]:
     section_header("Unsupervised Regimes", "Discover latent environmental regimes via clustering.")
 
     unsup = load_metric_file("unsupervised_metrics.json")
@@ -279,14 +822,18 @@ elif section == "Unsupervised Regimes":
     # Cards for clustering metrics
     if isinstance(unsup, dict) and len(unsup) > 0:
         # Expect keys like "kmeans", "gmm", etc.
-        keys = list(unsup.keys())[:3]  # keep tidy
+        keys = list(unsup.keys())
         cols = st.columns(min(3, len(keys)))
-        for col, k in zip(cols, keys):
+        for idx, k in enumerate(keys):
             m = unsup.get(k, {})
-            with col:
+            with cols[idx % len(cols)]:
                 st.markdown(f"**{k.replace('_', ' ').upper()}**")
                 st.markdown(f"- Silhouette: **{fmt3(m.get('silhouette_score'))}**")
                 st.markdown(f"- Davies–Bouldin: **{fmt3(m.get('davies_bouldin_index'))}**")
+                if "n_clusters" in m:
+                    st.markdown(f"- Clusters: **{m.get('n_clusters')}**")
+                if "noise_ratio" in m:
+                    st.markdown(f"- Noise ratio: **{fmt3(m.get('noise_ratio'))}**")
     else:
         st.info("Unsupervised metrics not available yet.")
 
@@ -315,31 +862,45 @@ elif section == "Unsupervised Regimes":
 # ═════════════════════════════════════════════════════════════════════════
 # 5) DEEP LEARNING BENCHMARK
 # ═════════════════════════════════════════════════════════════════════════
-elif section == "Deep Learning Benchmark":
+with tabs[4]:
     section_header("Deep Learning Benchmark", "Neural network baseline vs classical ML performance.")
 
     deep = load_metric_file("deep_metrics.json")
 
-    col1, col2 = st.columns(2)
+    reg_rows = []
+    clf_rows = []
+    if isinstance(deep, dict):
+        for k, m in deep.items():
+            if not isinstance(m, dict):
+                continue
+            if k.endswith("_regression") and "rmse" in m:
+                reg_rows.append(
+                    {"Profile": k.replace("_regression", "").replace("_", " ").title(), "RMSE": m.get("rmse"), "MAE": m.get("mae"), "R²": m.get("r2")}
+                )
+            if k.endswith("_classification") and "f1" in m:
+                clf_rows.append(
+                    {
+                        "Profile": k.replace("_classification", "").replace("_", " ").title(),
+                        "ROC-AUC": m.get("roc_auc"),
+                        "PR-AUC": m.get("pr_auc"),
+                        "F1": m.get("f1"),
+                        "Precision": m.get("precision"),
+                        "Recall": m.get("recall"),
+                    }
+                )
 
+    col1, col2 = st.columns(2)
     with col1:
-        st.subheader("MLP Regression")
-        m = deep.get("mlp_regression", {}) if isinstance(deep, dict) else {}
-        if isinstance(m, dict) and m:
-            st.markdown(f"- RMSE: **{fmt3(m.get('rmse'))}**")
-            st.markdown(f"- MAE: **{fmt3(m.get('mae'))}**")
-            st.markdown(f"- R²: **{fmt3(m.get('r2'))}**")
+        st.subheader("MLP Regression Profiles")
+        if reg_rows:
+            st.dataframe(pd.DataFrame(reg_rows).sort_values("RMSE"), use_container_width=True, hide_index=True, height=260)
         else:
             st.info("MLP regression metrics not available yet.")
 
     with col2:
-        st.subheader("MLP Classification")
-        m = deep.get("mlp_classification", {}) if isinstance(deep, dict) else {}
-        if isinstance(m, dict) and m:
-            # Avoid dumping confusion matrices raw
-            for k in ("roc_auc", "f1", "precision", "recall", "accuracy"):
-                if k in m:
-                    st.markdown(f"- {k.upper()}: **{fmt3(m.get(k))}**")
+        st.subheader("MLP Classification Profiles")
+        if clf_rows:
+            st.dataframe(pd.DataFrame(clf_rows).sort_values("F1", ascending=False), use_container_width=True, hide_index=True, height=260)
         else:
             st.info("MLP classification metrics not available yet.")
 
@@ -370,7 +931,7 @@ elif section == "Deep Learning Benchmark":
 # ═════════════════════════════════════════════════════════════════════════
 # 6) POLICY IMPLICATIONS
 # ═════════════════════════════════════════════════════════════════════════
-elif section == "Policy Implications":
+with tabs[5]:
     section_header("Policy Implications", "How to turn model outputs into actionable decisions.")
 
     st.markdown(
@@ -402,3 +963,14 @@ elif section == "Policy Implications":
         """,
         unsafe_allow_html=True,
     )
+
+
+# ═════════════════════════════════════════════════════════════════════════
+# 7) LIVE WEATHER (API)
+# ═════════════════════════════════════════════════════════════════════════
+with tabs[6]:
+    section_header("Live Weather (API)", "Near-live weather view with configurable refresh cadence.")
+    if show_live_weather:
+        st.info("Live Weather is already shown above. Turn off Quick Access to use this tab.")
+    else:
+        render_live_weather_panel()

@@ -287,9 +287,14 @@ Opens or serves `artifacts/reports/final_report.html`.
 streamlit run app/app.py
 ```
 
-The dashboard has six sections: Executive Summary, Statistical Overview,
-Supervised Models, Unsupervised Regimes, Deep Learning Benchmark, and
-Policy Implications.
+The dashboard has seven sections: Executive Summary, Statistical Overview,
+Supervised Models, Unsupervised Regimes, Deep Learning Benchmark, Policy
+Implications, and Live Weather (API).
+
+#### Live Weather setup
+
+The Live Weather tab uses Open-Meteo (keyless) for hourly and daily forecast data.
+You can adjust the refresh cadence (1–5 minutes) directly in the app.
 
 ### Makefile shortcuts
 

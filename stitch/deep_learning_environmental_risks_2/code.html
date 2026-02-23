@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Deep Learning Environmental Risks Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#192633",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Space Grotesk", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Space Grotesk", sans-serif;
+        }::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101922; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #233648; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #137fec; 
+        }.code-keyword { color: #c678dd; }.code-function { color: #61afef; }.code-string { color: #98c379; }.code-comment { color: #5c6370; font-style: italic; }.code-number { color: #d19a66; }.code-variable { color: #e06c75; }.tab-content { display: none; }
+        .tab-input:checked + .tab-label + .tab-content { display: block; }#training-code:target ~ .visual-view { display: none; }
+        #training-code:target ~ .code-view { display: block; }
+        #arch-code:target ~ .visual-view { display: none; }
+        #arch-code:target ~ .code-view { display: flex; }.code-view { display: none; }
+        .visual-view { display: flex; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col overflow-x-hidden">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-[#233648] px-6 py-3 bg-white dark:bg-[#111a22] sticky top-0 z-50">
+<div class="flex items-center gap-4 text-slate-900 dark:text-white">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-3xl">hub</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">DeepNet Analytics</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8 items-center">
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-slate-500 dark:text-[#92adc9] hover:text-primary dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Overview</a>
+<a class="text-primary dark:text-white text-sm font-bold leading-normal" href="#">Models</a>
+<a class="text-slate-500 dark:text-[#92adc9] hover:text-primary dark:hover:text-white text-sm font-medium leading-normal transition-colors" href="#">Live Data</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-blue-600 text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors shadow-[0_0_15px_rgba(19,127,236,0.4)]">
+<span class="truncate">Deploy Model</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border-2 border-slate-200 dark:border-[#233648]" data-alt="Portrait of a data scientist" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAfxBMDJ93olPh_XR7o9svPTM5x41CJ8_dipqOGOi8TZJDVH_DyM0B5KpObQxRtJg-qKQOGZ4ljxVE1OeHW3Ikk41Mpl6fZLaHFO8SXw9m1qE_KI5dDg9xQSyIzR4aeLIFgNJohEhrqv6b2bu_UCgX_oR48bbNmdis89wNKdl-L4bYr0KRH0xMaP_Kc7oJitfCjoDBNcOjRzKQixU6oZg20gEEb8-57CsodX75ukA-7ll14sD5UKqFr7obeb8fwF7l6AOflcvOQKwE");'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 p-4 lg:p-6 flex flex-col gap-6 max-w-[1600px] mx-auto w-full">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-green-500 text-sm">circle</span>
+<p class="text-slate-500 dark:text-[#92adc9] text-xs font-mono uppercase tracking-widest">Inference Status: Active • v4.2.0</p>
+</div>
+<h1 class="text-3xl md:text-4xl font-bold tracking-tight">Environmental Risk Assessment</h1>
+<p class="text-slate-500 dark:text-[#92adc9] text-sm">Region: California Coast • Lat: 34.0522 N • Lon: 118.2437 W</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-white dark:bg-[#192633] border border-slate-200 dark:border-[#233648] text-slate-700 dark:text-white text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#233648] transition-colors">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span>Export Report</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-white dark:bg-[#192633] border border-slate-200 dark:border-[#233648] text-slate-700 dark:text-white text-sm font-medium hover:bg-slate-50 dark:hover:bg-[#233648] transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Config</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-[#192633] border border-slate-200 dark:border-[#233648] shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">timelapse</span>
+</div>
+<div class="flex items-center justify-between">
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-medium">Current Epoch</p>
+</div>
+<div class="flex items-baseline gap-2 mt-1">
+<p class="text-3xl font-bold">150<span class="text-slate-400 text-xl font-normal">/200</span></p>
+</div>
+<div class="w-full bg-slate-200 dark:bg-[#233648] rounded-full h-1.5 mt-2">
+<div class="bg-primary h-1.5 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-[#192633] border border-slate-200 dark:border-[#233648] shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">trending_down</span>
+</div>
+<div class="flex items-center justify-between">
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-medium">Training Loss</p>
+<span class="flex items-center text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px] mr-1">arrow_downward</span>
+                        1.5%
+                    </span>
+</div>
+<div class="flex items-baseline gap-2 mt-1">
+<p class="text-3xl font-bold">0.024</p>
+<span class="text-slate-400 text-sm">MSE</span>
+</div>
+<p class="text-xs text-slate-500 mt-2">Converging faster than v4.1</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-[#192633] border border-slate-200 dark:border-[#233648] shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">verified</span>
+</div>
+<div class="flex items-center justify-between">
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-medium">Validation Accuracy</p>
+<span class="flex items-center text-emerald-500 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px] mr-1">arrow_upward</span>
+                        0.4%
+                    </span>
+</div>
+<div class="flex items-baseline gap-2 mt-1">
+<p class="text-3xl font-bold">96.8%</p>
+</div>
+<p class="text-xs text-slate-500 mt-2">Best checkpoint saved</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 bg-white dark:bg-[#192633] border border-slate-200 dark:border-[#233648] shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">memory</span>
+</div>
+<div class="flex items-center justify-between">
+<p class="text-slate-500 dark:text-[#92adc9] text-sm font-medium">GPU Load (A100)</p>
+</div>
+<div class="flex items-baseline gap-2 mt-1">
+<p class="text-3xl font-bold">84%</p>
+<span class="text-slate-400 text-sm">78°C</span>
+</div>
+<div class="flex gap-1 mt-2">
+<div class="h-1.5 flex-1 rounded-full bg-primary/40"></div>
+<div class="h-1.5 flex-1 rounded-full bg-primary/60"></div>
+<div class="h-1.5 flex-1 rounded-full bg-primary/80"></div>
+<div class="h-1.5 flex-1 rounded-full bg-primary"></div>
+<div class="h-1.5 flex-1 rounded-full bg-slate-700"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[500px]">
+<div class="lg:col-span-2 flex flex-col gap-6">
+<div class="flex flex-col flex-1 bg-white dark:bg-[#192633] rounded-xl border border-slate-200 dark:border-[#233648] shadow-sm overflow-hidden h-full min-h-[400px]">
+<div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#233648] bg-slate-50 dark:bg-[#1c2b3a]">
+<h3 class="font-bold text-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">public</span>
+                        Prediction Heatmap
+                    </h3>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 bg-white dark:bg-[#111a22] rounded-lg p-1 border border-slate-200 dark:border-[#233648]">
+<button class="px-3 py-1 text-xs font-medium rounded-md bg-primary text-white shadow-sm">PM2.5</button>
+<button class="px-3 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">Ozone</button>
+<button class="px-3 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">NO2</button>
+</div>
+</div>
+</div>
+<div class="relative w-full flex-1 bg-slate-900">
+<div class="absolute inset-0 bg-cover bg-center opacity-60 mix-blend-overlay" data-alt="Satellite view of earth from space showing lights at night" data-location="Earth" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDNZHfZBzv7_4PJ8yn4sbZuH_Z4oE-kwkZ1mn--lCk10MnXicw5-M4n8xncV4ExCHE37SCJWnQFOaL5msJBgLzbum6yYs9GXhxTW3n8HaG6uyl7Ms_CxEqTFl47ipDA64zMGktLtmOHTzNw6CLVRAJQJeBoQTnlM_-edU_qXQbCfUJ3Z1bm96pF7WZNZqsGznNoJ7jo-DDqn3k7qmw6JIVsqRvVE651vmdKY0SaZNRbJ47YARkYrVjJsPuyYjHbLH1P-x0QyZ5aXa0");'></div>
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(19,127,236,0.3)_0%,transparent_40%)]"></div>
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(250,98,56,0.2)_0%,transparent_30%)]"></div>
+<div class="absolute inset-0" style="background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px); background-size: 40px 40px;"></div>
+<div class="absolute bottom-6 left-6 flex flex-col gap-2">
+<div class="bg-[#192633]/90 backdrop-blur-md p-3 rounded-lg border border-[#233648] text-xs shadow-lg max-w-[200px]">
+<div class="flex items-center justify-between mb-2">
+<span class="text-slate-400">Selected Zone</span>
+<span class="text-emerald-400 font-bold">Safe</span>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between">
+<span>PM2.5</span>
+<span class="font-mono text-white">12.4 µg/m³</span>
+</div>
+<div class="flex justify-between">
+<span>Humidity</span>
+<span class="font-mono text-white">45%</span>
+</div>
+<div class="flex justify-between">
+<span>Wind</span>
+<span class="font-mono text-white">12 km/h NE</span>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute top-6 left-6 max-w-sm w-full">
+<label class="flex flex-col h-10 shadow-lg">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full overflow-hidden border border-slate-600/50">
+<div class="text-slate-400 flex border-none bg-[#192633]/90 backdrop-blur items-center justify-center pl-3">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none bg-[#192633]/90 backdrop-blur text-white focus:outline-0 focus:ring-0 border-none h-full placeholder:text-slate-500 px-3 text-sm font-normal leading-normal" placeholder="Search coordinates..."/>
+</div>
+</label>
+</div>
+<div class="absolute bottom-6 right-6 flex flex-col gap-2">
+<button class="bg-[#192633] text-white p-2 rounded-lg hover:bg-[#233648] border border-[#233648] shadow-lg">
+<span class="material-symbols-outlined block">add</span>
+</button>
+<button class="bg-[#192633] text-white p-2 rounded-lg hover:bg-[#233648] border border-[#233648] shadow-lg">
+<span class="material-symbols-outlined block">remove</span>
+</button>
+<button class="bg-[#192633] text-white p-2 rounded-lg hover:bg-[#233648] border border-[#233648] shadow-lg mt-2">
+<span class="material-symbols-outlined block">my_location</span>
+</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-white dark:bg-[#192633] p-4 rounded-xl border border-slate-200 dark:border-[#233648] flex flex-col justify-between h-32 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-primary/10 rounded-full blur-xl"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<h4 class="text-xs font-bold text-slate-500 dark:text-[#92adc9] uppercase tracking-wider">PM2.5 Prediction</h4>
+<div class="text-2xl font-bold mt-1 text-slate-900 dark:text-white">12.4 <span class="text-sm font-normal text-slate-500">µg/m³</span></div>
+</div>
+<span class="material-symbols-outlined text-primary">air</span>
+</div>
+<div class="text-xs text-slate-500 mt-2 z-10 flex justify-between w-full border-t border-slate-200 dark:border-slate-700 pt-2">
+<span>Actual: 12.1</span>
+<span class="text-emerald-500 font-mono">Err: 2.4%</span>
+</div>
+</div>
+<div class="bg-white dark:bg-[#192633] p-4 rounded-xl border border-slate-200 dark:border-[#233648] flex flex-col justify-between h-32 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-orange-500/10 rounded-full blur-xl"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<h4 class="text-xs font-bold text-slate-500 dark:text-[#92adc9] uppercase tracking-wider">Temp Prediction</h4>
+<div class="text-2xl font-bold mt-1 text-slate-900 dark:text-white">24.8 <span class="text-sm font-normal text-slate-500">°C</span></div>
+</div>
+<span class="material-symbols-outlined text-orange-500">thermostat</span>
+</div>
+<div class="text-xs text-slate-500 mt-2 z-10 flex justify-between w-full border-t border-slate-200 dark:border-slate-700 pt-2">
+<span>Actual: 25.1</span>
+<span class="text-emerald-500 font-mono">Err: 1.2%</span>
+</div>
+</div>
+<div class="bg-white dark:bg-[#192633] p-4 rounded-xl border border-slate-200 dark:border-[#233648] flex flex-col justify-between h-32 relative overflow-hidden">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-purple-500/10 rounded-full blur-xl"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<h4 class="text-xs font-bold text-slate-500 dark:text-[#92adc9] uppercase tracking-wider">NO2 Prediction</h4>
+<div class="text-2xl font-bold mt-1 text-slate-900 dark:text-white">0.04 <span class="text-sm font-normal text-slate-500">ppm</span></div>
+</div>
+<span class="material-symbols-outlined text-purple-500">cloud</span>
+</div>
+<div class="text-xs text-slate-500 mt-2 z-10 flex justify-between w-full border-t border-slate-200 dark:border-slate-700 pt-2">
+<span>Actual: 0.038</span>
+<span class="text-yellow-500 font-mono">Err: 5.2%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="bg-white dark:bg-[#192633] rounded-xl border border-slate-200 dark:border-[#233648] p-5 shadow-sm flex flex-col gap-4 relative" id="training-container">
+<a class="hidden" href="#training-visual" id="training-visual"></a>
+<a class="hidden" href="#training-code" id="training-code"></a>
+<div class="flex items-center justify-between">
+<h3 class="font-bold text-base flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">ssid_chart</span>
+                        Training Progress
+                    </h3>
+<div class="flex items-center gap-3">
+<div class="flex gap-2 text-xs visual-view">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary"></span>Acc</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-orange-500"></span>Loss</span>
+</div>
+<div class="flex bg-slate-100 dark:bg-[#111a22] rounded-md p-0.5 border border-slate-200 dark:border-[#233648]">
+<a class="px-2 py-0.5 rounded text-[10px] font-medium transition-colors hover:text-primary dark:text-slate-400 bg-white dark:bg-[#233648] shadow-sm text-slate-900 dark:text-white" href="#training-visual" onclick="document.querySelector('#training-code').removeAttribute('target')">Chart</a>
+<a class="px-2 py-0.5 rounded text-[10px] font-medium text-slate-500 hover:text-primary transition-colors dark:text-slate-500" href="#training-code">Code</a>
+</div>
+</div>
+</div>
+<div class="visual-view flex-col gap-4">
+<div class="relative h-48 w-full border-l border-b border-slate-200 dark:border-[#233648] flex items-end px-2 pb-2 gap-1">
+<div class="absolute left-0 right-0 top-0 h-[1px] bg-slate-100 dark:bg-slate-800"></div>
+<div class="absolute left-0 right-0 top-1/4 h-[1px] bg-slate-100 dark:bg-slate-800"></div>
+<div class="absolute left-0 right-0 top-2/4 h-[1px] bg-slate-100 dark:bg-slate-800"></div>
+<div class="absolute left-0 right-0 top-3/4 h-[1px] bg-slate-100 dark:bg-slate-800"></div>
+<svg class="absolute inset-0 w-full h-full pointer-events-none p-2" preserveAspectRatio="none">
+<path d="M0,150 C20,140 40,100 60,80 S100,60 150,50 S200,40 300,20" fill="none" stroke="#137fec" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+<path d="M0,10 C20,30 40,80 60,110 S100,130 150,140 S200,145 300,150" fill="none" stroke="#f97316" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+<div class="flex justify-between text-xs text-slate-500 font-mono">
+<span>Epoch 0</span>
+<span>Epoch 200</span>
+</div>
+</div>
+<div class="code-view w-full h-[220px] bg-[#0f151a] rounded-lg border border-slate-800 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-300">
+<pre><code><span class="code-comment"># PyTorch Training Loop</span>
+<span class="code-keyword">def</span> <span class="code-function">train_epoch</span>(model, loader, opt):
+    model.<span class="code-function">train</span>()
+    total_loss = <span class="code-number">0.0</span>
+    <span class="code-keyword">for</span> batch_idx, (data, target) <span class="code-keyword">in</span> <span class="code-function">enumerate</span>(loader):
+        <span class="code-comment"># Move tensors to GPU</span>
+        data, target = data.to(device), target.to(device)
+        opt.<span class="code-function">zero_grad</span>()
+        output = <span class="code-function">model</span>(data)
+        <span class="code-comment"># MSE Loss for regression</span>
+        loss = F.<span class="code-function">mse_loss</span>(output, target)
+        loss.<span class="code-function">backward</span>()
+        opt.<span class="code-function">step</span>()
+        <span class="code-keyword">if</span> batch_idx % <span class="code-number">100</span> == <span class="code-number">0</span>:
+            <span class="code-function">log_metric</span>(<span class="code-string">"loss"</span>, loss.item())
+    <span class="code-keyword">return</span> total_loss / <span class="code-function">len</span>(loader)</code></pre>
+</div>
+</div>
+<div class="bg-white dark:bg-[#192633] rounded-xl border border-slate-200 dark:border-[#233648] p-5 shadow-sm flex flex-col flex-1 min-h-[350px] relative">
+<a class="hidden" href="#arch-visual" id="arch-visual"></a>
+<a class="hidden" href="#arch-code" id="arch-code"></a>
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-bold text-base flex items-center gap-2">
+<span class="material-symbols-outlined text-purple-500 text-[20px]">account_tree</span>
+                        Model Architecture
+                    </h3>
+<div class="flex bg-slate-100 dark:bg-[#111a22] rounded-md p-0.5 border border-slate-200 dark:border-[#233648]">
+<a class="px-2 py-0.5 rounded text-[10px] font-medium transition-colors hover:text-primary dark:text-slate-400 bg-white dark:bg-[#233648] shadow-sm text-slate-900 dark:text-white" href="#arch-visual" onclick="document.querySelector('#arch-code').removeAttribute('target')">Graph</a>
+<a class="px-2 py-0.5 rounded text-[10px] font-medium text-slate-500 hover:text-primary transition-colors dark:text-slate-500" href="#arch-code">Code</a>
+</div>
+</div>
+<div class="visual-view flex-1 flex-col justify-center gap-6 relative">
+<div class="absolute left-4 top-4 bottom-4 w-0.5 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 ml-[11px]"></div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="size-6 rounded-full bg-[#111a22] border-2 border-primary flex items-center justify-center shadow-[0_0_10px_rgba(19,127,236,0.5)]">
+<div class="size-2 bg-primary rounded-full animate-pulse"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Input Layer</span>
+<span class="text-xs text-slate-500 font-mono">Tensor (224, 224, 3)</span>
+</div>
+</div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="size-6 rounded-full bg-[#192633] border-2 border-slate-600 flex items-center justify-center">
+<div class="size-2 bg-slate-500 rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Conv2D Block 1</span>
+<span class="text-xs text-slate-500 font-mono">64 Filters, 3x3</span>
+</div>
+</div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="size-6 rounded-full bg-[#192633] border-2 border-slate-600 flex items-center justify-center">
+<div class="size-2 bg-slate-500 rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">MaxPooling</span>
+<span class="text-xs text-slate-500 font-mono">2x2 Stride</span>
+</div>
+</div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="size-6 rounded-full bg-[#111a22] border-2 border-emerald-500 flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+<div class="size-2 bg-emerald-500 rounded-full animate-pulse"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">Dense Layer</span>
+<span class="text-xs text-slate-500 font-mono">1024 Units + ReLU</span>
+</div>
+</div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="size-6 rounded-full bg-[#192633] border-2 border-orange-500 flex items-center justify-center">
+<div class="size-2 bg-orange-500 rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-900 dark:text-white">Output Layer</span>
+<span class="text-xs text-slate-500 font-mono">Softmax (Risk Class)</span>
+</div>
+</div>
+</div>
+<div class="code-view flex-1 bg-[#0f151a] rounded-lg border border-slate-800 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed text-slate-300">
+<pre><code><span class="code-comment"># Keras Model Architecture</span>
+<span class="code-keyword">class</span> <span class="code-function">EnvRiskModel</span>(tf.keras.Model):
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self):
+        super().<span class="code-function">__init__</span>()
+        <span class="code-comment"># Input Processing</span>
+        self.conv1 = layers.<span class="code-function">Conv2D</span>(<span class="code-number">64</span>, (<span class="code-number">3</span>, <span class="code-number">3</span>), activation=<span class="code-string">'relu'</span>)
+        self.pool1 = layers.<span class="code-function">MaxPooling2D</span>((<span class="code-number">2</span>, <span class="code-number">2</span>))
+        <span class="code-comment"># Feature Extraction</span>
+        self.flatten = layers.<span class="code-function">Flatten</span>()
+        self.dense1 = layers.<span class="code-function">Dense</span>(<span class="code-number">1024</span>, activation=<span class="code-string">'relu'</span>)
+        self.dropout = layers.<span class="code-function">Dropout</span>(<span class="code-number">0.5</span>)
+        <span class="code-comment"># Risk Classification Output</span>
+        self.out = layers.<span class="code-function">Dense</span>(<span class="code-number">3</span>, activation=<span class="code-string">'softmax'</span>)
+    <span class="code-keyword">def</span> <span class="code-function">call</span>(self, inputs):
+        x = self.conv1(inputs)
+        x = self.pool1(x)
+        x = self.flatten(x)
+        x = self.dense1(x)
+        <span class="code-keyword">return</span> self.out(x)</code></pre>
+</div>
+</div>
+<div class="bg-[#0f151a] rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-400 h-48 overflow-y-auto">
+<div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-800 text-slate-300">
+<span class="material-symbols-outlined text-[14px]">terminal</span>
+                    Console Output
+                </div>
+<div class="space-y-1">
+<p><span class="text-green-500">[14:02:01]</span> Connected to Region: CA_West</p>
+<p><span class="text-blue-500">[14:02:05]</span> Fetching sat_imagery_v2...</p>
+<p><span class="text-blue-500">[14:02:06]</span> Normalizing tensors...</p>
+<p><span class="text-yellow-500">[14:02:10]</span> Warning: High wind variance detected</p>
+<p><span class="text-green-500">[14:02:12]</span> Inference batch #4092 completed</p>
+<p><span class="text-slate-600">... awaiting new buffer</span></p>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

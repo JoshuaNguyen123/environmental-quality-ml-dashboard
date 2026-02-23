@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Environmental Data Science Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0f172a",
+                        "accent-teal": "#14b8a6",
+                        "accent-purple": "#a855f7",
+                        "accent-orange": "#f97316",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 flex-shrink-0 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg">
+<span class="material-symbols-outlined text-white">monitoring</span>
+</div>
+<div>
+<h1 class="text-lg font-bold tracking-tight">EcoAnalytics</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Station ENV-702</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+<div class="py-4">
+<p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Main Menu</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">sensors</span>
+<span>Live Streams</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Model Performance</span>
+</a>
+</div>
+<div class="py-4">
+<p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">System</p>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">terminal</span>
+<span>API Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span>Documentation</span>
+</a>
+</div>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<button class="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>Export Analysis</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-16 flex items-center justify-between px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1 bg-accent-teal/10 text-accent-teal rounded-full text-xs font-bold border border-accent-teal/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-teal opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-accent-teal"></span>
+</span>
+                            API CONNECTED
+                        </div>
+<div class="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+<div class="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">device_thermostat</span>
+<span>22°C</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">humidity_mid</span>
+<span>45% RH</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">air</span>
+<span>12km/h NW</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full cursor-pointer">notifications</span>
+<div class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-slate-900"></div>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
+<img class="w-full h-full object-cover" data-alt="Portrait of a professional data scientist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIKZchUp0ATyXjgGy8y8M-PKSBnkrDB2uZ1es67_4Pb-TN1jt_h8S1CaSDE41F_7QVbf22ALdaR-5NudLAVuqLut0Lq5NZmD72rboUFfL74oI8Bgrg-2H0_tLgW_ThKJ0Ff5upsM7SddKvVmd5GPqxY7mK-DLtRQKAUN49Mao8ONaJNWDHlYStYmSALY4-1ijyyhOfakU2rrHuQJyzG7U0XyXGR_5HxhZ53PQAHoY8U2gUcaaG2e2TxzNm_9igi_VAkDcj5FY_B4c"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-8 bg-background-light dark:bg-background-dark">
+<!-- Welcome Section -->
+<div class="flex flex-col md:flex-row justify-between items-end gap-4">
+<div>
+<h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Descriptive Statistics</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Real-time environmental telemetry analysis and sensor health validation.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span>Last 24 Hours</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-sm">refresh</span>
+<span>Sync Data</span>
+</button>
+</div>
+</div>
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Observations</p>
+<span class="material-symbols-outlined text-slate-400">dataset</span>
+</div>
+<p class="text-2xl font-bold tracking-tight">1,240,582</p>
+<div class="mt-2 flex items-center gap-1 text-xs text-accent-teal">
+<span class="material-symbols-outlined text-xs">arrow_upward</span>
+<span>4.2% since yesterday</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Active Features</p>
+<span class="material-symbols-outlined text-slate-400">filter_list</span>
+</div>
+<p class="text-2xl font-bold tracking-tight">14</p>
+<div class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            Dimensionality optimized
+                        </div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Data Quality Score</p>
+<span class="material-symbols-outlined text-slate-400">verified_user</span>
+</div>
+<p class="text-2xl font-bold tracking-tight text-accent-teal">99.98%</p>
+<div class="mt-2 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-xs text-accent-orange">warning</span>
+<span>0.02% Missing Values</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Inference Latency</p>
+<span class="material-symbols-outlined text-slate-400">timer</span>
+</div>
+<p class="text-2xl font-bold tracking-tight">24ms</p>
+<div class="mt-2 flex items-center gap-1 text-xs text-accent-teal">
+<span>Optimal performance</span>
+</div>
+</div>
+</div>
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Distribution Plot 1 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="font-bold">Air Quality Distribution (PM2.5)</h3>
+<p class="text-xs text-slate-500">Frequency density over 24h sample</p>
+</div>
+<span class="material-symbols-outlined text-slate-400">info</span>
+</div>
+<div class="h-64 flex items-end gap-1.5 px-2">
+<div class="flex-1 bg-accent-teal/10 hover:bg-accent-teal/30 transition-colors h-1/4 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/20 hover:bg-accent-teal/40 transition-colors h-2/4 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/40 hover:bg-accent-teal/60 transition-colors h-3/4 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/60 hover:bg-accent-teal/80 transition-colors h-5/6 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/80 hover:bg-accent-teal transition-colors h-full rounded-t"></div>
+<div class="flex-1 bg-accent-teal/60 hover:bg-accent-teal/80 transition-colors h-4/5 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/40 hover:bg-accent-teal/60 transition-colors h-2/3 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/20 hover:bg-accent-teal/40 transition-colors h-1/3 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/10 hover:bg-accent-teal/30 transition-colors h-1/6 rounded-t"></div>
+<div class="flex-1 bg-accent-teal/5 hover:bg-accent-teal/20 transition-colors h-[5%] rounded-t"></div>
+</div>
+<div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between text-xs font-mono text-slate-500">
+<span>0 µg/m³</span>
+<span>15 µg/m³ (Mean)</span>
+<span>45 µg/m³</span>
+</div>
+</div>
+<!-- Box Plot Simulation -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="font-bold">Soil Moisture Variance</h3>
+<p class="text-xs text-slate-500">Quartile analysis by sensor depth</p>
+</div>
+<span class="material-symbols-outlined text-slate-400">equalizer</span>
+</div>
+<div class="space-y-8 py-4">
+<!-- Depth 10cm -->
+<div class="relative h-12 flex items-center">
+<span class="w-12 text-xs font-mono text-slate-500">10cm</span>
+<div class="flex-1 h-0.5 bg-slate-200 dark:bg-slate-800 mx-4 relative">
+<div class="absolute left-1/4 right-1/4 top-1/2 -translate-y-1/2 h-6 w-1/3 bg-accent-purple/20 border border-accent-purple rounded-sm"></div>
+<div class="absolute left-[42%] top-1/2 -translate-y-1/2 h-6 w-0.5 bg-accent-purple"></div>
+</div>
+</div>
+<!-- Depth 30cm -->
+<div class="relative h-12 flex items-center">
+<span class="w-12 text-xs font-mono text-slate-500">30cm</span>
+<div class="flex-1 h-0.5 bg-slate-200 dark:bg-slate-800 mx-4 relative">
+<div class="absolute left-1/3 right-1/4 top-1/2 -translate-y-1/2 h-6 w-2/5 bg-accent-purple/20 border border-accent-purple rounded-sm"></div>
+<div class="absolute left-[52%] top-1/2 -translate-y-1/2 h-6 w-0.5 bg-accent-purple"></div>
+</div>
+</div>
+<!-- Depth 60cm -->
+<div class="relative h-12 flex items-center">
+<span class="w-12 text-xs font-mono text-slate-500">60cm</span>
+<div class="flex-1 h-0.5 bg-slate-200 dark:bg-slate-800 mx-4 relative">
+<div class="absolute left-[40%] right-1/5 top-1/2 -translate-y-1/2 h-6 w-1/4 bg-accent-purple/20 border border-accent-purple rounded-sm"></div>
+<div class="absolute left-[53%] top-1/2 -translate-y-1/2 h-6 w-0.5 bg-accent-purple"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Model Validation Table -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold">Preprocessing Validation Results</h3>
+<div class="flex gap-2">
+<div class="flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-500">
+<span class="material-symbols-outlined text-[12px]">science</span>
+                                EXPERIMENT V2.4
+                            </div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
+<th class="px-6 py-3">Preprocessing Step</th>
+<th class="px-6 py-3">MAE</th>
+<th class="px-6 py-3">RMSE</th>
+<th class="px-6 py-3">R² Score</th>
+<th class="px-6 py-3">Latency</th>
+<th class="px-6 py-3 text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-medium">Outlier Removal (Z-Score)</div>
+<div class="text-[10px] text-slate-400 font-mono italic">sigma=3.0</div>
+</td>
+<td class="px-6 py-4 font-mono text-sm">0.0241</td>
+<td class="px-6 py-4 font-mono text-sm">0.0315</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-sm">0.942</span>
+<div class="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-accent-teal w-[94%]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">1.2ms</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-1 bg-accent-teal/10 text-accent-teal text-[10px] font-bold rounded">SUCCESS</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-medium">KNN Imputation</div>
+<div class="text-[10px] text-slate-400 font-mono italic">k=5, weights='distance'</div>
+</td>
+<td class="px-6 py-4 font-mono text-sm">0.0418</td>
+<td class="px-6 py-4 font-mono text-sm">0.0522</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-sm">0.891</span>
+<div class="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[89%]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">4.8ms</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-1 bg-accent-teal/10 text-accent-teal text-[10px] font-bold rounded">SUCCESS</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-medium">Standard Scaling</div>
+<div class="text-[10px] text-slate-400 font-mono italic">mu=0, std=1</div>
+</td>
+<td class="px-6 py-4 font-mono text-sm">0.0112</td>
+<td class="px-6 py-4 font-mono text-sm">0.0145</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-mono text-sm">0.978</span>
+<div class="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-accent-teal w-[97%]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">0.4ms</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-1 bg-accent-teal/10 text-accent-teal text-[10px] font-bold rounded">SUCCESS</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-medium">Missing Value Check</div>
+<div class="text-[10px] text-slate-400 font-mono italic">Recursive threshold 5%</div>
+</td>
+<td class="px-6 py-4 font-mono text-sm">--</td>
+<td class="px-6 py-4 font-mono text-sm">--</td>
+<td class="px-6 py-4 font-mono text-sm">--</td>
+<td class="px-6 py-4 text-sm text-slate-500">2.1ms</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-1 bg-accent-orange/10 text-accent-orange text-[10px] font-bold rounded">WARNING</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
