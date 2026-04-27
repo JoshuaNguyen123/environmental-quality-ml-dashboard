@@ -10,11 +10,11 @@ implementation with batch normalization and learning rate scheduling.
 """
 
 import warnings
+
 import numpy as np
-from sklearn.neural_network import MLPRegressor, MLPClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
-from typing import Dict, Tuple
+from sklearn.preprocessing import StandardScaler
 
 
 def train_mlp_regressor(
@@ -23,7 +23,7 @@ def train_mlp_regressor(
     X_val: np.ndarray,
     y_val: np.ndarray,
     config: dict | None = None,
-) -> Tuple[Pipeline, Dict[str, list]]:
+) -> tuple[Pipeline, dict[str, list]]:
     """Train feedforward MLP for regression with early stopping.
 
     Architecture:
@@ -96,7 +96,7 @@ def train_mlp_classifier(
     X_val: np.ndarray,
     y_val: np.ndarray,
     config: dict | None = None,
-) -> Tuple[Pipeline, Dict[str, list]]:
+) -> tuple[Pipeline, dict[str, list]]:
     """Train feedforward MLP for binary classification with early stopping.
 
     Architecture:

@@ -20,17 +20,21 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
-# Generated data (reproducible via pipeline)
+# Streamlit
+.streamlit/secrets.toml
+
+# Data is reproducible from `make train`; raw + intermediate are gitignored.
 data/raw/*
 data/interim/*
 data/processed/*
 
-# Generated artifacts (reproducible via pipeline)
+# Trained model files (.joblib) are large and not used by the dashboard;
+# they are reproducible via `make train`.
 artifacts/models/*
-artifacts/metrics/*
-artifacts/figures/*
-artifacts/tables/*
-artifacts/reports/*
+
+# Demo artifacts (metrics JSON, figures PNG, comparison tables, HTML report)
+# ARE committed so the dashboard works on first launch without training.
+# These are intentionally NOT gitignored.
 
 # Preserve directory structure
 !**/.gitkeep

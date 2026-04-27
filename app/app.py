@@ -3,6 +3,10 @@ Air Quality Risk Modeling — Streamlit Dashboard.
 
 Run (from repo root):
     streamlit run app/app.py
+
+The dashboard reads pre-computed metrics, figures, and tables from
+``artifacts/`` (these are committed to the repo so the demo works on first
+launch). To regenerate them run ``python scripts/train_all.py``.
 """
 
 import json
@@ -11,17 +15,17 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+import numpy as np
+import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
-import pandas as pd
-import numpy as np
 
 from src.utils.io import load_json, load_project_config
 

@@ -1,12 +1,13 @@
 """Descriptive statistics: moments, correlations, and distribution summaries."""
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from scipy import stats as sp_stats
-from typing import Dict, Any
 
 
-def compute_descriptive_stats(df: pd.DataFrame, numeric_cols: list | None = None) -> Dict[str, Any]:
+def compute_descriptive_stats(df: pd.DataFrame, numeric_cols: list | None = None) -> dict[str, Any]:
     """Compute descriptive statistics for all numeric columns.
 
     Returns dict with per-column: mean, variance, std, skewness, kurtosis,

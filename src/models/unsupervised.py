@@ -1,18 +1,18 @@
 """Unsupervised learning: K-Means and Gaussian Mixture Model clustering."""
 
+
 import numpy as np
 import pandas as pd
-from sklearn.cluster import KMeans, AgglomerativeClustering, DBSCAN
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
+from sklearn.manifold import TSNE
+from sklearn.metrics import davies_bouldin_score, silhouette_score
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
-from sklearn.manifold import TSNE
-from sklearn.metrics import silhouette_score, davies_bouldin_score
-from typing import Dict, Tuple
 
 
 def train_kmeans(
     X: np.ndarray, params: dict | None = None
-) -> Tuple[KMeans, np.ndarray]:
+) -> tuple[KMeans, np.ndarray]:
     """K-Means clustering: minimize Sum_k Sum_{x_i in C_k} ||x_i - mu_k||^2
 
     Assumptions:
@@ -31,7 +31,7 @@ def train_kmeans(
 
 def train_gmm(
     X: np.ndarray, params: dict | None = None
-) -> Tuple[GaussianMixture, np.ndarray]:
+) -> tuple[GaussianMixture, np.ndarray]:
     """Gaussian Mixture Model: p(x) = Sum pi_k N(x | mu_k, Sum_k)
 
     Assumptions:
@@ -49,7 +49,7 @@ def train_gmm(
 
 def train_agglomerative(
     X: np.ndarray, params: dict | None = None
-) -> Tuple[AgglomerativeClustering, np.ndarray]:
+) -> tuple[AgglomerativeClustering, np.ndarray]:
     """Agglomerative hierarchical clustering."""
     if params is None:
         params = {"n_clusters": 4, "linkage": "ward"}
@@ -62,7 +62,7 @@ def train_agglomerative(
 
 def train_dbscan(
     X: np.ndarray, params: dict | None = None
-) -> Tuple[DBSCAN, np.ndarray]:
+) -> tuple[DBSCAN, np.ndarray]:
     """Density-based clustering with noise points."""
     if params is None:
         params = {"eps": 0.8, "min_samples": 15}
@@ -73,7 +73,7 @@ def train_dbscan(
     return model, labels
 
 
-def cluster_metrics(X: np.ndarray, labels: np.ndarray) -> Dict[str, float]:
+def cluster_metrics(X: np.ndarray, labels: np.ndarray) -> dict[str, float]:
     """Compute clustering quality metrics."""
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)

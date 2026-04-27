@@ -11,48 +11,73 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-import json
 import numpy as np
 import pandas as pd
 
-from src.utils.io import (
-    load_project_config, load_model_config, load_threshold_config,
-    save_json, save_model, save_csv, ensure_dirs,
-)
-from src.utils.plotting import (
-    correlation_heatmap, residual_plot, roc_curves, pr_curves,
-    confusion_matrices, calibration_curve_plot, cluster_scatter,
-    cluster_profiles as plot_cluster_profiles, training_curves,
-    threshold_value_curve,
-)
-from src.data.ingest import load_or_generate
+from src.business.threshold_analysis import threshold_sweep
 from src.data.clean import clean
+from src.data.ingest import load_or_generate
 from src.data.split import chronological_split
 from src.features.engineer import engineer_features, get_feature_columns
 from src.features.preprocessing import prepare_xy
-from src.stats.descriptive import compute_descriptive_stats
-from src.stats.hypothesis import two_sample_ttest, seasonal_anova, chi_square_test
-from src.stats.diagnostics import variance_inflation_factor, residual_diagnostics
+from src.models.deep_learning import train_mlp_classifier, train_mlp_regressor
+from src.models.evaluation import (
+    classification_metrics,
+    get_calibration_data,
+    get_pr_data,
+    get_roc_data,
+    regression_metrics,
+)
 from src.models.supervised import (
-    train_linear_regression, train_random_forest_reg,
-    train_logistic_regression, train_random_forest_clf,
-    train_extra_trees_reg, train_hist_gradient_boosting_reg,
-    train_extra_trees_clf, train_hist_gradient_boosting_clf,
+    train_extra_trees_clf,
+    train_extra_trees_reg,
+    train_hist_gradient_boosting_clf,
+    train_hist_gradient_boosting_reg,
+    train_linear_regression,
+    train_logistic_regression,
+    train_random_forest_clf,
+    train_random_forest_reg,
 )
 from src.models.unsupervised import (
-    train_kmeans, train_gmm, cluster_metrics,
-    build_cluster_summary, reduce_for_viz, train_agglomerative, train_dbscan,
+    build_cluster_summary,
+    cluster_metrics,
+    reduce_for_viz,
+    train_agglomerative,
+    train_dbscan,
+    train_gmm,
+    train_kmeans,
 )
-from src.models.deep_learning import train_mlp_regressor, train_mlp_classifier
-from src.models.evaluation import (
-    regression_metrics, classification_metrics,
-    get_roc_data, get_pr_data, get_calibration_data,
-    compute_permutation_importance,
+from src.stats.descriptive import compute_descriptive_stats
+from src.stats.diagnostics import residual_diagnostics, variance_inflation_factor
+from src.stats.hypothesis import chi_square_test, seasonal_anova, two_sample_ttest
+from src.utils.io import (
+    ensure_dirs,
+    load_model_config,
+    load_project_config,
+    load_threshold_config,
+    save_csv,
+    save_json,
+    save_model,
 )
-from src.business.threshold_analysis import threshold_sweep
+from src.utils.logging import setup_logging
+from src.utils.plotting import (
+    calibration_curve_plot,
+    cluster_scatter,
+    confusion_matrices,
+    correlation_heatmap,
+    pr_curves,
+    residual_plot,
+    roc_curves,
+    threshold_value_curve,
+    training_curves,
+)
+from src.utils.plotting import (
+    cluster_profiles as plot_cluster_profiles,
+)
 
 
 def main():
+    setup_logging()
     print("=" * 70)
     print("  AIR QUALITY ML PIPELINE - Full Training Run")
     print("=" * 70)
