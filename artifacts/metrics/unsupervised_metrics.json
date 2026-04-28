@@ -1,6 +1,6 @@
 {
   "kmeans": {
-    "silhouette_score": 0.15426502961513094,
+    "silhouette_score": 0.15426502961513097,
     "davies_bouldin_index": 1.7233919897499592,
     "n_clusters": 4,
     "noise_ratio": 0.0

@@ -41,7 +41,8 @@ def residual_diagnostics(residuals: np.ndarray) -> dict[str, Any]:
     # Jarque-Bera
     jb_stat, jb_p = sp_stats.jarque_bera(residuals)
 
-    # Durbin-Watson approximation
+    # Durbin-Watson statistic: DW = sum_{t=2..n}(e_t - e_{t-1})^2 / sum_{t=1..n} e_t^2
+    # (~2 = no autocorrelation, <2 = positive, >2 = negative)
     diff = np.diff(residuals)
     dw = float(np.sum(diff ** 2) / np.sum(residuals ** 2))
 

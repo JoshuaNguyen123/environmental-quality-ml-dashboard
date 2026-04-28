@@ -44,7 +44,7 @@ def build_html_report():
     desc_html = ""
     if isinstance(stats, dict) and isinstance(stats.get("column_statistics"), dict) and stats["column_statistics"]:
         desc_df = pd.DataFrame(stats["column_statistics"]).T
-        preferred = ["mean", "std", "min", "median", "max", "skewness", "kurtosis", "n", "variance"]
+        preferred = ["mean", "std", "min", "median", "max", "skewness", "excess_kurtosis", "n", "variance"]
         cols = [c for c in preferred if c in desc_df.columns] + [c for c in desc_df.columns if c not in preferred]
         desc_df = desc_df[cols]
         desc_html = (

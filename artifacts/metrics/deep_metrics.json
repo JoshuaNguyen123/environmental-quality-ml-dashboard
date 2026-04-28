@@ -25,9 +25,9 @@
   "mlp_training_epochs": 38,
   "training_epochs": 38,
   "mlp_deep_regression": {
-    "rmse": 25.74756554849396,
+    "rmse": 25.747565548493963,
     "mae": 20.422098832435758,
-    "r2": 0.6796633046332463
+    "r2": 0.6796633046332462
   },
   "mlp_deep_classification": {
     "precision": 0.6954022988505747,
@@ -45,13 +45,13 @@
     ],
     "roc_auc": 0.9057415026502094,
     "pr_auc": 0.6880205139015952,
-    "log_loss": 0.2805402862143968
+    "log_loss": 0.28054028621439675
   },
   "mlp_deep_training_epochs": 24,
   "mlp_regularized_regression": {
-    "rmse": 30.39244198342302,
-    "mae": 23.505637974103454,
-    "r2": 0.5536602777845788
+    "rmse": 30.392441979845643,
+    "mae": 23.50563796644434,
+    "r2": 0.5536602778896527
   },
   "mlp_regularized_classification": {
     "precision": 0.6682926829268293,
@@ -69,7 +69,7 @@
     ],
     "roc_auc": 0.915182178731606,
     "pr_auc": 0.7220052887719172,
-    "log_loss": 0.25880706069875953
+    "log_loss": 0.25880706069875964
   },
   "mlp_regularized_training_epochs": 120
 }
