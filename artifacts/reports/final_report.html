@@ -194,7 +194,7 @@
       <th>median</th>
       <th>max</th>
       <th>skewness</th>
-      <th>kurtosis</th>
+      <th>excess_kurtosis</th>
       <th>n</th>
       <th>variance</th>
     </tr>
@@ -255,7 +255,7 @@
       <td>2.000</td>
       <td>115.000</td>
       <td>388.000</td>
-      <td>0.318</td>
+      <td>0.319</td>
       <td>-0.465</td>
       <td>9351.000</td>
       <td>5661.870</td>
@@ -268,7 +268,7 @@
       <td>1026.000</td>
       <td>1695.000</td>
       <td>-0.088</td>
-      <td>-0.119</td>
+      <td>-0.118</td>
       <td>9351.000</td>
       <td>27112.393</td>
     </tr>
@@ -280,7 +280,7 @@
       <td>945.000</td>
       <td>1474.000</td>
       <td>0.080</td>
-      <td>-0.118</td>
+      <td>-0.117</td>
       <td>9351.000</td>
       <td>18601.346</td>
     </tr>
@@ -472,7 +472,7 @@
       <td>76.333</td>
       <td>143.833</td>
       <td>-0.221</td>
-      <td>-0.594</td>
+      <td>-0.593</td>
       <td>9351.000</td>
       <td>641.031</td>
     </tr>
@@ -489,7 +489,7 @@ Hourly time-series data exhibits temporal autocorrelation, so p-values
 may be anti-conservative. Results should be interpreted as exploratory.
 </div>
 <details class='details'><summary>Welch's Two-Sample t-test</summary><div class="table-scroll"><table class="data-table kv"><tr><th>null_hypothesis</th><td>No difference in mean NO2_GT between high/low Temperature days</td></tr><tr><th>t_statistic</th><td>0.8197404002259354</td></tr><tr><th>p_value</th><td>0.41238506904378264</td></tr><tr><th>group_high_mean</th><td>74.12039991491172</td></tr><tr><th>group_low_mean</th><td>73.35290322580646</td></tr><tr><th>group_high_n</th><td>4701</td></tr><tr><th>group_low_n</th><td>4650</td></tr><tr><th>significant_at_0.05</th><td>False</td></tr><tr><th>caveat</th><td>Independence assumption is violated due to temporal autocorrelation in hourly time-series data. p-value may be anti-conservative.</td></tr></table></div></details>
-<details class='details'><summary>One-Way ANOVA</summary><div class="table-scroll"><table class="data-table kv"><tr><th>null_hypothesis</th><td>Equal mean NO2_GT across all seasons</td></tr><tr><th>f_statistic</th><td>17.599225641097178</td></tr><tr><th>p_value</th><td>2.1749553929666313e-11</td></tr><tr><th>season_means</th><td><div class="table-scroll"><table border="1" class="dataframe data-table">
+<details class='details'><summary>One-Way ANOVA</summary><div class="table-scroll"><table class="data-table kv"><tr><th>null_hypothesis</th><td>Equal mean NO2_GT across all seasons</td></tr><tr><th>f_statistic</th><td>17.59922564109715</td></tr><tr><th>p_value</th><td>2.1749553929667305e-11</td></tr><tr><th>season_means</th><td><div class="table-scroll"><table border="1" class="dataframe data-table">
   <tbody>
     <tr>
       <th>0</th>
