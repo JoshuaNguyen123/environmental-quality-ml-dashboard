@@ -1,0 +1,26 @@
+{
+  "kmeans": {
+    "silhouette_score": 0.15426502961513094,
+    "davies_bouldin_index": 1.7233919897499592,
+    "n_clusters": 4,
+    "noise_ratio": 0.0
+  },
+  "gmm": {
+    "silhouette_score": 0.13965975412641038,
+    "davies_bouldin_index": 1.7495635127022169,
+    "n_clusters": 4,
+    "noise_ratio": 0.0
+  },
+  "agglomerative": {
+    "silhouette_score": 0.1030419853213482,
+    "davies_bouldin_index": 1.8537392897363594,
+    "n_clusters": 4,
+    "noise_ratio": 0.0
+  },
+  "dbscan": {
+    "silhouette_score": NaN,
+    "davies_bouldin_index": NaN,
+    "n_clusters": 0,
+    "noise_ratio": 1.0
+  }
+}

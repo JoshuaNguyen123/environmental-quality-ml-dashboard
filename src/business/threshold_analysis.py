@@ -1,8 +1,8 @@
 """Risk and threshold analysis: optimize decision boundary for cost-benefit."""
 
+
 import numpy as np
-from sklearn.metrics import f1_score, confusion_matrix
-from typing import Tuple
+from sklearn.metrics import confusion_matrix, f1_score
 
 
 def threshold_sweep(
@@ -13,7 +13,7 @@ def threshold_sweep(
     fn_cost: float = 15,
     tn_benefit: float = 0,
     n_thresholds: int = 100,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, float]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float, float]:
     """Sweep decision thresholds and compute F1 + expected value at each.
 
     Value = TP * Benefit - FP * Cost - FN * Cost_miss + TN * Benefit_baseline

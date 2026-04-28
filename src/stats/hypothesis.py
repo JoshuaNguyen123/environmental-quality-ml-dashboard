@@ -1,8 +1,9 @@
 """Hypothesis tests: t-test, ANOVA, Chi-Square with documented assumptions."""
 
+from typing import Any
+
 import pandas as pd
 from scipy import stats as sp_stats
-from typing import Dict, Any
 
 
 def two_sample_ttest(
@@ -10,7 +11,7 @@ def two_sample_ttest(
     value_col: str = "NO2_GT",
     group_col: str = "Temperature",
     split_method: str = "median",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Two-sample t-test: compare pollution on high vs low temperature days.
 
     H_0: mu_high_temp = mu_low_temp
@@ -49,7 +50,7 @@ def seasonal_anova(
     df: pd.DataFrame,
     value_col: str = "NO2_GT",
     season_col: str = "Season",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """One-way ANOVA: test pollution differences across seasons.
 
     H_0: mu_winter = mu_spring = mu_summer = mu_autumn
@@ -81,7 +82,7 @@ def chi_square_test(
     humidity_col: str = "Rel_Humidity",
     bins: list | None = None,
     labels: list | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Chi-square test of independence: pollution threshold * humidity bucket.
 
     H_0: High_Pollution and Humidity_Bucket are independent

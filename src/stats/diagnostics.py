@@ -1,11 +1,12 @@
 """Regression diagnostics: VIF, normality tests, heteroscedasticity checks."""
 
+from typing import Any
+
 import numpy as np
 from scipy import stats as sp_stats
-from typing import Dict, Any
 
 
-def variance_inflation_factor(X: np.ndarray, feature_names: list) -> Dict[str, float]:
+def variance_inflation_factor(X: np.ndarray, feature_names: list) -> dict[str, float]:
     """Compute VIF for each feature to detect multicollinearity.
 
     VIF > 5 suggests moderate collinearity; VIF > 10 suggests severe.
@@ -27,7 +28,7 @@ def variance_inflation_factor(X: np.ndarray, feature_names: list) -> Dict[str, f
     return vifs
 
 
-def residual_diagnostics(residuals: np.ndarray) -> Dict[str, Any]:
+def residual_diagnostics(residuals: np.ndarray) -> dict[str, Any]:
     """Run normality and heteroscedasticity diagnostics on residuals."""
     # Shapiro-Wilk (on subsample if n > 5000)
     if len(residuals) > 5000:

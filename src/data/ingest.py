@@ -9,9 +9,44 @@ When the real dataset is unavailable, this module generates a statistically
 faithful synthetic version for demonstration purposes.
 """
 
+import logging
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
+
+LOG = logging.getLogger(__name__)
+
+# Columns the downstream pipeline relies on. Date/Time are parsed by clean.py;
+# the remainder must be numeric (or coercible). NMHC_GT is allowed to be
+# mostly-missing per the UCI dataset documentation.
+REQUIRED_COLUMNS: tuple[str, ...] = (
+    "Date", "Time",
+    "CO_GT", "PT08_S1_CO", "C6H6_GT", "PT08_S2_NMHC",
+    "NOx_GT", "PT08_S3_NOx", "NO2_GT", "PT08_S4_NO2", "PT08_S5_O3",
+    "Temperature", "Rel_Humidity", "Abs_Humidity",
+)
+
+
+class SchemaError(ValueError):
+    """Raised when an ingested dataframe does not match the expected UCI schema."""
+
+
+def validate_schema(df: pd.DataFrame, *, source: str = "input") -> None:
+    """Verify that ``df`` has the columns the pipeline depends on.
+
+    Raises ``SchemaError`` with an actionable message if the schema is wrong.
+    Does NOT enforce dtype — clean.py coerces numerics later — only presence.
+    """
+    missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
+    if missing:
+        raise SchemaError(
+            f"{source} is missing required columns: {missing}. "
+            f"Got: {sorted(df.columns.tolist())}. "
+            "If you're loading the real UCI dataset, ensure the CSV uses ';' separator and "
+            "the column names match `src.data.ingest.REQUIRED_COLUMNS`. "
+            "To use the bundled synthetic fallback, delete `data/raw/air_quality.csv` and re-run."
+        )
 
 
 def generate_synthetic_air_quality(n_hours: int = 9357, seed: int = 42) -> pd.DataFrame:
@@ -106,20 +141,24 @@ def generate_synthetic_air_quality(n_hours: int = 9357, seed: int = 42) -> pd.Da
 
 
 def load_or_generate(raw_path: str | Path) -> pd.DataFrame:
-    """Load real CSV if available, otherwise generate synthetic data."""
+    """Load real CSV if available, otherwise generate synthetic data.
+
+    The real UCI CSV uses ';' separator and ',' as decimal; both are handled.
+    The synthetic fallback uses '.' decimals so we coerce numerics defensively.
+    Raises ``SchemaError`` if the loaded CSV does not match the expected columns.
+    """
     raw_path = Path(raw_path)
     if raw_path.exists():
-        # UCI format uses ';' separator and ',' as decimal
         df = pd.read_csv(raw_path, sep=";", decimal=",")
-        # Drop trailing empty columns
         df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
-        # Coerce numeric columns (synthetic CSV is written with '.' decimal, so re-read gives strings when decimal=',')
+        validate_schema(df, source=str(raw_path))
         for col in df.columns:
             if col not in ("Date", "Time"):
                 df[col] = pd.to_numeric(df[col], errors="coerce")
+        LOG.info("ingest: loaded %d rows from %s", len(df), raw_path)
         return df
 
-    print("[ingest] Real dataset not found -- generating synthetic data.")
+    LOG.info("ingest: real dataset not found, generating synthetic data")
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     df = generate_synthetic_air_quality()
     df.to_csv(raw_path, index=False, sep=";")

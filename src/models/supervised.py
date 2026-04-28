@@ -1,18 +1,17 @@
 """Supervised learning: regression and classification model training."""
 
 import numpy as np
-from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import (
-    RandomForestRegressor,
-    RandomForestClassifier,
-    ExtraTreesRegressor,
     ExtraTreesClassifier,
-    HistGradientBoostingRegressor,
+    ExtraTreesRegressor,
     HistGradientBoostingClassifier,
+    HistGradientBoostingRegressor,
+    RandomForestClassifier,
+    RandomForestRegressor,
 )
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-
 
 # ===========================================================================
 # REGRESSION

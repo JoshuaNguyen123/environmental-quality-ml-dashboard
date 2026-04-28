@@ -2,30 +2,29 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import joblib
 import pandas as pd
 import yaml
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def load_yaml(path: str | Path) -> Dict[str, Any]:
+def load_yaml(path: str | Path) -> dict[str, Any]:
     with open(path) as f:
         return yaml.safe_load(f)
 
 
-def load_project_config() -> Dict[str, Any]:
+def load_project_config() -> dict[str, Any]:
     return load_yaml(ROOT / "configs" / "project.yaml")
 
 
-def load_model_config() -> Dict[str, Any]:
+def load_model_config() -> dict[str, Any]:
     return load_yaml(ROOT / "configs" / "models.yaml")
 
 
-def load_threshold_config() -> Dict[str, Any]:
+def load_threshold_config() -> dict[str, Any]:
     return load_yaml(ROOT / "configs" / "thresholds.yaml")
 
 
