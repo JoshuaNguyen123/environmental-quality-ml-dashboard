@@ -10,8 +10,11 @@ from scipy import stats as sp_stats
 def compute_descriptive_stats(df: pd.DataFrame, numeric_cols: list | None = None) -> dict[str, Any]:
     """Compute descriptive statistics for all numeric columns.
 
-    Returns dict with per-column: mean, variance, std, skewness, kurtosis,
-    min, max, median, and the full Pearson correlation matrix.
+    Per-column statistics use bias-corrected (sample) estimators consistently:
+    variance/std with ``ddof=1``, skewness and excess kurtosis with
+    ``bias=False``. ``excess_kurtosis`` is Fisher's definition (raw kurtosis
+    minus 3); a normal distribution gives 0. The Pearson correlation matrix
+    uses pairwise complete observations.
     """
     if numeric_cols is None:
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
@@ -23,8 +26,8 @@ def compute_descriptive_stats(df: pd.DataFrame, numeric_cols: list | None = None
             "mean": float(s.mean()),
             "variance": float(s.var()),
             "std": float(s.std()),
-            "skewness": float(sp_stats.skew(s)),
-            "kurtosis": float(sp_stats.kurtosis(s)),
+            "skewness": float(sp_stats.skew(s, bias=False)),
+            "excess_kurtosis": float(sp_stats.kurtosis(s, bias=False)),
             "min": float(s.min()),
             "max": float(s.max()),
             "median": float(s.median()),
